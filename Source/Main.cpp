@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "Renderer.h"
+
 bool g_Running = false;
 
 // Window
@@ -11,8 +13,7 @@ int g_Width = 0;
 int g_Height = 0;
 
 //Renderer
-SDL_Renderer* g_pRenderer = nullptr;
-SDL_Color g_BackgroundColor = SDL_Color{ 0x00, 0x00, 0x00, 0xFF };
+Renderer g_Renderer;
 
 //Texture
 SDL_Texture*  g_pTexture = nullptr;
@@ -24,34 +25,6 @@ void WindowRelease()
 	// Destroy the window
 	SDL_DestroyWindow(g_pWindow);
 	g_pWindow = nullptr;
-}
-
-void RendererRelease()
-{
-	SDL_DestroyRenderer(g_pRenderer);
-	g_pRenderer = nullptr;
-}
-
-void RendererClearBackBuffer()
-{
-	SDL_SetRenderDrawColor(g_pRenderer, g_BackgroundColor.r, g_BackgroundColor.g, g_BackgroundColor.b, g_BackgroundColor.a);
-	SDL_RenderClear(g_pRenderer);
-}
-
-bool CreateRenderer(int index, Uint32 flags)
-{
-	if (!g_pWindow)
-		return false;
-
-	RendererRelease();
-
-	g_pRenderer = SDL_CreateRenderer(g_pWindow, index, flags);
-	if (g_pRenderer == nullptr)
-		return false;
-
-	RendererClearBackBuffer();
-
-	return true;
 }
 
 bool WindowCreate(std::string title, int x, int y, int w, int h, Uint32 flags)
@@ -71,6 +44,7 @@ bool WindowCreate(std::string title, int x, int y, int w, int h, Uint32 flags)
 
 	return true;
 }
+
 
 void TextureRelease()
 {
@@ -116,8 +90,8 @@ bool Init()
 		return false;
 	}
 
-	// Create a renderer, report error if window not created
-	if (!CreateRenderer(-1, SDL_RENDERER_ACCELERATED))
+	//if (!CreateRenderer(-1, SDL_RENDERER_ACCELERATED))
+	if (!g_Renderer.Create(g_pWindow))
 	{
 		Err2MsgBox("Renderer Creation Failed.\n");
 		return false;
@@ -129,34 +103,12 @@ bool Init()
 void Cleanup()
 {
 	TextureRelease();
-	RendererRelease();
+	g_Renderer.Release();
 	WindowRelease();
 
 	// Shutdown SDL
 	IMG_Quit();
 	SDL_Quit();
-}
-
-void HandleEvents()
-{
-	SDL_Event Event;
-
-	while (SDL_PollEvent(&Event))
-	{
-		if (Event.type == SDL_QUIT)
-			g_Running = false;
-	}
-}
-
-void Render()
-{
-	if (g_pRenderer && g_pTexture)
-		SDL_RenderCopy(g_pRenderer, g_pTexture, nullptr, nullptr);
-
-	SDL_RenderPresent(g_pRenderer);
-
-	// Clear the backbuffer ready for next frame
-	RendererClearBackBuffer();
 }
 
 void LoadTestImage(std::string filename)
@@ -172,7 +124,7 @@ void LoadTestImage(std::string filename)
 	else
 	{
 		TextureRelease();
-		g_pTexture = SDL_CreateTextureFromSurface(g_pRenderer, pSurface);
+		g_pTexture = SDL_CreateTextureFromSurface(g_Renderer.GetRenderPtr(), pSurface);
 
 		if (g_pTexture != nullptr)
 		{
@@ -183,6 +135,26 @@ void LoadTestImage(std::string filename)
 	}
 }
 
+void HandleEvents()
+{
+	SDL_Event Event;
+
+	while (SDL_PollEvent(&Event))
+	{
+		if (Event.type == SDL_QUIT)
+			g_Running = false;
+	}
+}
+
+void Render()
+{
+	if (g_Renderer.GetRenderPtr() && g_pTexture)
+		SDL_RenderCopy(g_Renderer.GetRenderPtr(), g_pTexture, nullptr, nullptr);
+
+	// Display backbuffer and clear new one ready for next frame
+	g_Renderer.Present();
+}
+
 void MainLoop()
 {
 	// Load the image
@@ -191,7 +163,7 @@ void MainLoop()
 	g_Running = true;
 
 	// Clear the window
-	RendererClearBackBuffer();
+	g_Renderer.ClearBackBuffer();
 
 	while (g_Running)
 	{
