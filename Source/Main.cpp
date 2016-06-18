@@ -4,6 +4,7 @@
 
 #include "SDLErrorReport.h"
 #include "Renderer.h"
+#include "Texture.h"
 
 bool g_Running = false;
 
@@ -17,9 +18,7 @@ int g_Height = 0;
 Renderer g_Renderer;
 
 //Texture
-SDL_Texture*  g_pTexture = nullptr;
-int g_TextureWidth = 0;
-int g_TextureHeight = 0;
+Texture g_Texture;
 
 void WindowRelease()
 {
@@ -44,15 +43,6 @@ bool WindowCreate(std::string title, int x, int y, int w, int h, Uint32 flags)
 	g_WindowID = SDL_GetWindowID(g_pWindow);
 
 	return true;
-}
-
-
-void TextureRelease()
-{
-	SDL_DestroyTexture(g_pTexture);
-	g_pTexture = nullptr;
-	g_Width = 0;
-	g_Height = 0;
 }
 
 bool Init()
@@ -85,7 +75,6 @@ bool Init()
 		return false;
 	}
 
-	//if (!CreateRenderer(-1, SDL_RENDERER_ACCELERATED))
 	if (!g_Renderer.Create(g_pWindow))
 	{
 		Error2MsgBox("Renderer Creation Failed.\n");
@@ -97,37 +86,13 @@ bool Init()
 
 void Cleanup()
 {
-	TextureRelease();
+	g_Texture.Release();
 	g_Renderer.Release();
 	WindowRelease();
 
 	// Shutdown SDL
 	IMG_Quit();
 	SDL_Quit();
-}
-
-void LoadTestImage(std::string filename)
-{
-	SDL_Surface* pSurface = nullptr;
-	pSurface = IMG_Load(filename.c_str());
-
-	if (!pSurface)
-	{
-		Error2MsgBox("Could not load texture from file.\n");
-		return;
-	}
-	else
-	{
-		TextureRelease();
-		g_pTexture = SDL_CreateTextureFromSurface(g_Renderer.GetRenderPtr(), pSurface);
-
-		if (g_pTexture != nullptr)
-		{
-			g_Width = pSurface->w;
-			g_Height = pSurface->h;
-		}
-		SDL_FreeSurface(pSurface);
-	}
 }
 
 void HandleEvents()
@@ -143,8 +108,7 @@ void HandleEvents()
 
 void Render()
 {
-	if (g_Renderer.GetRenderPtr() && g_pTexture)
-		SDL_RenderCopy(g_Renderer.GetRenderPtr(), g_pTexture, nullptr, nullptr);
+	g_Texture.Render(g_Renderer);
 
 	// Display backbuffer and clear new one ready for next frame
 	g_Renderer.Present();
@@ -153,7 +117,7 @@ void Render()
 void MainLoop()
 {
 	// Load the image
-	LoadTestImage("../Gfx/HelloWorld.png");
+	g_Texture.CreateFromFile(g_Renderer, "../Gfx/HelloWorld.png");
 
 	g_Running = true;
 
