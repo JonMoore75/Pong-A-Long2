@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include "SDLErrorReport.h"
 #include "Renderer.h"
 
 bool g_Running = false;
@@ -54,18 +55,12 @@ void TextureRelease()
 	g_Height = 0;
 }
 
-void Err2MsgBox(std::string err_msg)
-{
-	err_msg += SDL_GetError();
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
-}
-
 bool Init()
 {
 	// Initialise SDL, report error if it fails
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
-		Err2MsgBox("SDL Initialisation Failed!\n");
+		Error2MsgBox("SDL Initialisation Failed!\n");
 		return false;
 	}
 
@@ -86,14 +81,14 @@ bool Init()
 		640, 480,
 		SDL_WINDOW_SHOWN))
 	{
-		Err2MsgBox("Window Creation Failed.\n");
+		Error2MsgBox("Window Creation Failed.\n");
 		return false;
 	}
 
 	//if (!CreateRenderer(-1, SDL_RENDERER_ACCELERATED))
 	if (!g_Renderer.Create(g_pWindow))
 	{
-		Err2MsgBox("Renderer Creation Failed.\n");
+		Error2MsgBox("Renderer Creation Failed.\n");
 		return false;
 	}
 
@@ -118,7 +113,7 @@ void LoadTestImage(std::string filename)
 
 	if (!pSurface)
 	{
-		Err2MsgBox("Could not load texture from file.\n");
+		Error2MsgBox("Could not load texture from file.\n");
 		return;
 	}
 	else
