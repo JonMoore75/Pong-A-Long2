@@ -5,45 +5,12 @@
 #include "SDLErrorReport.h"
 #include "Renderer.h"
 #include "Texture.h"
+#include "Window.h"
 
 bool g_Running = false;
 
-// Window
-SDL_Window* g_pWindow = nullptr;
-int g_WindowID = 0;
-int g_Width = 0;
-int g_Height = 0;
-
-//Renderer
-Renderer g_Renderer;
-
-//Texture
+Window g_Window;
 Texture g_Texture;
-
-void WindowRelease()
-{
-	// Destroy the window
-	SDL_DestroyWindow(g_pWindow);
-	g_pWindow = nullptr;
-}
-
-bool WindowCreate(std::string title, int x, int y, int w, int h, Uint32 flags)
-{
-	WindowRelease();
-
-	g_pWindow = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
-
-	if (g_pWindow == nullptr)
-		return false;
-
-	g_Width = w;
-	g_Height = h;
-
-	//Grab window identifier 
-	g_WindowID = SDL_GetWindowID(g_pWindow);
-
-	return true;
-}
 
 bool Init()
 {
@@ -65,7 +32,7 @@ bool Init()
 	}
 
 	// Create a window, report error if window not created
-	if (!WindowCreate("Test Window",
+	if (!g_Window.Create("Test Window",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		640, 480,
@@ -75,7 +42,7 @@ bool Init()
 		return false;
 	}
 
-	if (!g_Renderer.Create(g_pWindow))
+	if (!g_Window.CreateRenderer())
 	{
 		Error2MsgBox("Renderer Creation Failed.\n");
 		return false;
@@ -87,8 +54,7 @@ bool Init()
 void Cleanup()
 {
 	g_Texture.Release();
-	g_Renderer.Release();
-	WindowRelease();
+	g_Window.Release();
 
 	// Shutdown SDL
 	IMG_Quit();
@@ -106,29 +72,25 @@ void HandleEvents()
 	}
 }
 
-void Render()
+void Render(Renderer& renderer)
 {
-	g_Texture.Render(g_Renderer);
-
-	// Display backbuffer and clear new one ready for next frame
-	g_Renderer.Present();
+	g_Texture.Render(renderer);
+	g_Window.Present();
 }
 
 void MainLoop()
 {
 	// Load the image
-	g_Texture.CreateFromFile(g_Renderer, "../Gfx/HelloWorld.png");
+	g_Texture.CreateFromFile(g_Window.GetRenderer(), "../Gfx/HelloWorld.png");
 
 	g_Running = true;
-
-	// Clear the window
-	g_Renderer.ClearBackBuffer();
 
 	while (g_Running)
 	{
 		HandleEvents();
 
-		Render();
+		if (g_Window.CanRender())
+			Render(g_Window.GetRenderer());
 	}
 }
 
