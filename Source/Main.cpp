@@ -1,6 +1,8 @@
 #include <string>
 #include <SDL.h>
 
+bool g_Running = false;
+
 SDL_Window* g_pWindow = nullptr;
 int g_WindowID = 0;
 int g_Width = 0;
@@ -66,10 +68,25 @@ void Cleanup()
 	SDL_Quit();
 }
 
+void HandleEvents()
+{
+	SDL_Event Event;
+
+	while (SDL_PollEvent(&Event))
+	{
+		if (Event.type == SDL_QUIT)
+			g_Running = false;
+	}
+}
+
 void MainLoop()
 {
-	// Wait for 3 seconds
-	SDL_Delay(3000);
+	g_Running = true;
+
+	while (g_Running)
+	{
+		HandleEvents();
+	}
 }
 
 int main(int argc, char *argv[])
