@@ -33,14 +33,18 @@ bool WindowCreate(std::string title, int x, int y, int w, int h, Uint32 flags)
 	return true;
 }
 
+void Err2MsgBox(std::string err_msg)
+{
+	err_msg += SDL_GetError();
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
+}
+
 bool Init()
 {
 	// Initialise SDL, report error if it fails
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
-		std::string err_msg = "SDL Initialisation Failed!\n";
-		err_msg += SDL_GetError();
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
+		Err2MsgBox("SDL Initialisation Failed!\n");
 		return false;
 	}
 
@@ -51,9 +55,7 @@ bool Init()
 		640, 480,
 		SDL_WINDOW_SHOWN))
 	{
-		std::string err_msg = "Window Creation Failed.\n";
-		err_msg += SDL_GetError();
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
+		Err2MsgBox("Window Creation Failed.\n");
 		return false;
 	}
 
