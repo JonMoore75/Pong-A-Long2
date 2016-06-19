@@ -3,14 +3,17 @@
 #pragma once
 
 #include "Window.h"
+#include "EventHandler.h"
 
-class GameApp
+class GameApp : public EventHandler
 {
 public:
 	GameApp();
-	~GameApp();
+	virtual ~GameApp();
 
 	int Execute();
+
+	bool OnExit() { m_Running = false; return true; }
 
 protected:
 
@@ -29,7 +32,6 @@ protected:
 	void Render();
 
 protected:
-
 	bool	m_Running = false;
 
 	Window	m_Window;

@@ -8,12 +8,13 @@ Window::Window()
 
 Window::~Window()
 {
-	m_Renderer.Release();
 	Release();
 }
 
 void Window::Release()
 {
+	m_Renderer.Release();
+
 	// Destroy the window
 	SDL_DestroyWindow(m_pWindow);
 	m_pWindow = nullptr;
@@ -31,8 +32,14 @@ bool Window::Create(std::string title, int x, int y, int w, int h, Uint32 flags)
 	m_Width = w;
 	m_Height = h;
 
+	m_bMouseFocus = true;
+	m_bKeyboardFocus = true;
+
 	//Grab window identifier 
 	m_WindowID = SDL_GetWindowID(m_pWindow);
+
+	//Flag as opened 
+	m_bShown = true;
 
 	return true;
 }
@@ -49,6 +56,6 @@ void Window::ClearWindow()
 
 void Window::Present()
 {
-	if (m_pWindow)
+	if (CanRender())
 		m_Renderer.Present();
 }

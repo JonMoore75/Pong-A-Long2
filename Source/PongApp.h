@@ -17,9 +17,19 @@ public:
 
 	void AppRender(Renderer& renderer);
 
+	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
+	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
+
 private:
-	Texture m_textTexture;
-	Texture m_textTexture_fast;
+	SDL_Keycode m_KeyDown = SDLK_UNKNOWN;
+	Texture m_KeyPressed;
+	Texture m_MouseFocus;
+	Texture m_KeyFocus;
+	Texture m_Shown;
+	Texture m_Maximized;
+
+	Texture m_Yes;
+	Texture m_No;
 
 	FontTTF m_Font;
 };
