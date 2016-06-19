@@ -3,12 +3,13 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <sstream>
+
 #include "SDLErrorReport.h"
 
-
-GameApp::GameApp()
+GameApp::GameApp(std::string appname) : m_AppName(appname)
 {
-
+	
 }
 
 GameApp::~GameApp()
@@ -20,7 +21,6 @@ void GameApp::Cleanup()
 {
 	AppCleanup();
 
-	// Generic cleanup
 	m_Window.Release();
 
 	// Shutdown SDL
@@ -62,7 +62,7 @@ bool GameApp::Init()
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		640, 480,
-		SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE))
+		SDL_WINDOW_SHOWN /*| SDL_WINDOW_RESIZABLE*/))
 	{
 		Error2MsgBox("Window Creation Failed.\n");
 		return false;
@@ -74,6 +74,8 @@ bool GameApp::Init()
 		Error2MsgBox("Renderer Creation Failed.\n");
 		return false;
 	}
+
+	m_Timer.Initialize();
 
 	return AppInit();
 }
@@ -91,16 +93,6 @@ void GameApp::HandleEvents()
 	}
 }
 
-void GameApp::Render()
-{
-	// If we have valid window & renderer then render the frame
-	if (m_Window.CanRender())
-	{
-		AppRender(m_Window.GetRenderer());
-		m_Window.Present();
-	}
-}
-
 void GameApp::MainLoop()
 {
 	m_Running = true;
@@ -111,7 +103,31 @@ void GameApp::MainLoop()
 	{
 		HandleEvents();
 
+		if (m_Timer.Update())
+		{
+			// Gets time since last frame
+			double deltaTime = m_Timer.GetDeltaTime();
+
+			// Update the derived class
+			AppUpdate(deltaTime);
+
+			if (m_ShowFPS)
+				DrawFramesPerSecond();
+
+		}
+
+		// Draw our frame
 		Render();
+	}
+}
+
+void GameApp::Render()
+{
+	// If we have valid window & renderer then render the frame
+	if (m_Window.CanRender())
+	{
+		AppRender(m_Window.GetRenderer());
+		m_Window.Present();
 	}
 }
 
@@ -126,4 +142,14 @@ int GameApp::Execute()
 	Cleanup();
 
 	return 0;
+}
+
+void GameApp::DrawFramesPerSecond()
+{
+	std::stringstream strm;
+	strm << m_AppName << "--Frames Per Second = " << round(m_Timer.GetFrameRate());
+	strm << ", missed " << m_Timer.GetMissedFrames() << " frames";
+
+	// Now set the new caption to the main window.
+	m_Window.SetTitle(strm.str());
 }

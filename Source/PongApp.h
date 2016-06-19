@@ -9,29 +9,33 @@
 class PongApp : public GameApp
 {
 public:
-	PongApp() {}
-	virtual ~PongApp() {}
+	PongApp(std::string appname);
+	virtual ~PongApp();
 
 	bool AppInit();
 	void AppCleanup();
 
 	void AppRender(Renderer& renderer);
 
+	void AppUpdate(double dt);
+
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
 private:
-	SDL_Keycode m_KeyDown = SDLK_UNKNOWN;
-	Texture m_KeyPressed;
-	Texture m_MouseFocus;
-	Texture m_KeyFocus;
-	Texture m_Shown;
-	Texture m_Maximized;
+	void ResetBall();
 
-	Texture m_Yes;
-	Texture m_No;
+	double m_Ball_PosX = 0.0;
+	double m_Ball_PosY = 0.0;
 
-	FontTTF m_Font;
+	double m_Ball_VelX = 200.;
+	double m_Ball_VelY = 200.;
+
+	double m_Ball_Speed = 200.;
+
+	Texture m_Ball;
+
+	Texture m_textInstruct;
 };
 
 #endif // PongApp_h__
