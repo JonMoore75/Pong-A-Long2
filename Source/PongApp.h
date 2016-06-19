@@ -9,13 +9,15 @@
 class PongApp : public GameApp
 {
 public:
-	PongApp() {}
-	virtual ~PongApp() {}
+	PongApp(std::string appname);
+	virtual ~PongApp();
 
 	bool AppInit();
 	void AppCleanup();
 
 	void AppRender(Renderer& renderer);
+
+	void AppUpdate(double dt);
 
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);

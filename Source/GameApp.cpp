@@ -3,12 +3,13 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <sstream>
+
 #include "SDLErrorReport.h"
 
-
-GameApp::GameApp()
+GameApp::GameApp(std::string appname) : m_AppName(appname)
 {
-
+	
 }
 
 GameApp::~GameApp()
@@ -20,7 +21,6 @@ void GameApp::Cleanup()
 {
 	AppCleanup();
 
-	// Generic cleanup
 	m_Window.Release();
 
 	// Shutdown SDL
@@ -75,6 +75,8 @@ bool GameApp::Init()
 		return false;
 	}
 
+	m_Timer.Initialize();
+
 	return AppInit();
 }
 
@@ -111,6 +113,20 @@ void GameApp::MainLoop()
 	{
 		HandleEvents();
 
+		if (m_Timer.Update())
+		{
+			// Gets time since last frame
+			double deltaTime = m_Timer.GetDeltaTime();
+
+			// Update the derived class
+			AppUpdate(deltaTime);
+
+			if (m_ShowFPS)
+				DrawFramesPerSecond();
+
+		}
+
+		// Draw our frame
 		Render();
 	}
 }
@@ -126,4 +142,14 @@ int GameApp::Execute()
 	Cleanup();
 
 	return 0;
+}
+
+void GameApp::DrawFramesPerSecond()
+{
+	std::stringstream strm;
+	strm << m_AppName << "--Frames Per Second = " << round(m_Timer.GetFrameRate());
+	strm << ", missed " << m_Timer.GetMissedFrames() << " frames";
+
+	// Now set the new caption to the main window.
+	m_Window.SetTitle(strm.str());
 }

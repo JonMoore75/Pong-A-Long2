@@ -1,5 +1,15 @@
 #include "PongApp.h"
 
+PongApp::PongApp(std::string appname) : GameApp(appname)
+{
+
+}
+
+PongApp::~PongApp()
+{
+
+}
+
 bool PongApp::AppInit()
 {
 	if (m_Font.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 36, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
@@ -71,6 +81,11 @@ void PongApp::AppRender(Renderer& renderer)
 		m_Yes.Render(renderer, m_Maximized.GetWidth(), y);
 	else
 		m_No.Render(renderer, m_Maximized.GetWidth(), y);
+}
+
+void PongApp::AppUpdate(double dt)
+{
+
 }
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)

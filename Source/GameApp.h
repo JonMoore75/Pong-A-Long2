@@ -4,16 +4,15 @@
 
 #include "Window.h"
 #include "EventHandler.h"
+#include "TimeKeeper.h"
 
 class GameApp : public EventHandler
 {
 public:
-	GameApp();
+	GameApp(std::string appname);
 	virtual ~GameApp();
 
 	int Execute();
-
-	bool OnExit() { m_Running = false; return true; }
 
 protected:
 
@@ -26,15 +25,25 @@ protected:
 	virtual void AppCleanup() {}
 	virtual bool AppInit() { return true; }
 	virtual void AppRender(Renderer& renderer) = 0;
+	virtual void AppUpdate(double dt) = 0;
 
 	void MainLoop();
 
 	void Render();
 
+	bool OnExit() { m_Running = false; return true; }
+
+	void DrawFramesPerSecond();
+
 protected:
+	std::string m_AppName;
 	bool	m_Running = false;
 
 	Window	m_Window;
+
+	bool	m_ShowFPS = true;
+
+	TimeKeeper m_Timer;
 };
 
 #endif // GameApp_h__
