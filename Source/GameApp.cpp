@@ -62,7 +62,7 @@ bool GameApp::Init()
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		640, 480,
-		SDL_WINDOW_SHOWN))
+		SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE))
 	{
 		Error2MsgBox("Window Creation Failed.\n");
 		return false;
@@ -84,8 +84,10 @@ void GameApp::HandleEvents()
 
 	while (SDL_PollEvent(&Event))
 	{
-		if (Event.type == SDL_QUIT)
-			m_Running = false;
+		if (Event.type == SDL_WINDOWEVENT && Event.window.windowID == m_Window.GetID())
+			m_Window.OnEvent(Event);
+		else
+			OnEvent(Event);
 	}
 }
 
