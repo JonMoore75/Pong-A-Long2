@@ -23,7 +23,18 @@ public:
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
 private:
+	void ResetBall();
+
+	double m_Ball_PosX = 0.0;
+	double m_Ball_PosY = 0.0;
+
+	double m_Ball_VelX = 200.;
+	double m_Ball_VelY = 200.;
+
+	double m_Ball_Speed = 200.;
+
 	Texture m_Ball;
+
 	Texture m_textInstruct;
 };
 

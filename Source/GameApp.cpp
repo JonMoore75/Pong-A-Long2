@@ -93,16 +93,6 @@ void GameApp::HandleEvents()
 	}
 }
 
-void GameApp::Render()
-{
-	// If we have valid window & renderer then render the frame
-	if (m_Window.CanRender())
-	{
-		AppRender(m_Window.GetRenderer());
-		m_Window.Present();
-	}
-}
-
 void GameApp::MainLoop()
 {
 	m_Running = true;
@@ -128,6 +118,16 @@ void GameApp::MainLoop()
 
 		// Draw our frame
 		Render();
+	}
+}
+
+void GameApp::Render()
+{
+	// If we have valid window & renderer then render the frame
+	if (m_Window.CanRender())
+	{
+		AppRender(m_Window.GetRenderer());
+		m_Window.Present();
 	}
 }
 

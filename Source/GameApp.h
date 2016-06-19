@@ -39,9 +39,9 @@ protected:
 	std::string m_AppName;
 	bool	m_Running = false;
 
-	Window	m_Window;
-
 	bool	m_ShowFPS = true;
+
+	Window	m_Window;
 
 	TimeKeeper m_Timer;
 };
