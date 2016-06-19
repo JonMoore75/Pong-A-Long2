@@ -3,8 +3,6 @@
 #pragma once
 
 #include "Window.h"
-#include "Texture.h"
-#include "Font_TTF.h"
 
 class GameApp
 {
@@ -14,7 +12,7 @@ public:
 
 	int Execute();
 
-private:
+protected:
 
 	void Cleanup();
 
@@ -22,16 +20,19 @@ private:
 
 	void HandleEvents();
 
-	void Render(Renderer& renderer);
+	virtual void AppCleanup() {}
+	virtual bool AppInit() { return true; }
+	virtual void AppRender(Renderer& renderer) = 0;
 
 	void MainLoop();
+
+	void Render();
+
+protected:
 
 	bool	m_Running = false;
 
 	Window	m_Window;
-	Texture m_textTexture;
-	Texture m_textTexture_fast;
-	FontTTF m_Font;
 };
 
 #endif // GameApp_h__
