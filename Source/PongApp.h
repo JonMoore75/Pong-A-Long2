@@ -23,17 +23,8 @@ public:
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
 private:
-	SDL_Keycode m_KeyDown = SDLK_UNKNOWN;
-	Texture m_KeyPressed;
-	Texture m_MouseFocus;
-	Texture m_KeyFocus;
-	Texture m_Shown;
-	Texture m_Maximized;
-
-	Texture m_Yes;
-	Texture m_No;
-
-	FontTTF m_Font;
+	Texture m_Ball;
+	Texture m_textInstruct;
 };
 
 #endif // PongApp_h__

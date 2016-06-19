@@ -22,6 +22,9 @@ public:
 
 	int GetID() { return m_WindowID; }
 
+	int GetHeight() { return m_Height; }
+	int GetWidth() { return m_Width; }
+
 	void SetTitle(std::string NewTitle) { SDL_SetWindowTitle(m_pWindow, NewTitle.c_str()); }
 
 	bool CanRender() { return (m_pWindow && m_Renderer.GetRenderPtr() && !m_bMinimized); }
