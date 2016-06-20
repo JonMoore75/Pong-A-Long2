@@ -17,28 +17,28 @@ bool PongApp::AppInit()
 	// Ball Creation
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
+
 	m_Ball.SetAnchorPt(GameObject::CENTRE);
 	ResetBall();
 
 	FontTTF arialFont;
-	if (arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
-	{
-		bool success = m_textInstruct.CreateFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont);
-		
-		return success;
-	}
-	return false;
+	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
+		return false;
+
+	if (!m_textInstruct.CreateTextureFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont))
+		return false;
+
+	return true;
 }
 
 void PongApp::AppCleanup()
 {
-	m_textInstruct.Release();
 }
 
 
 void PongApp::AppRender(Renderer& renderer)
 {
-	m_textInstruct.Render(renderer, 0, 0);
+	m_textInstruct.Render(renderer);
 	m_Ball.Render(renderer);
 }
 

@@ -16,6 +16,7 @@ public:
 	virtual ~GameObject();
 
 	bool CreateTexture(Renderer& renderer, std::string filename);
+	bool CreateTextureFromText(Renderer& renderer, std::string text, FontTTF& font);
 	void Render(Renderer& renderer) const;
 
 	const Vec2D& GetVel() const { return m_Velocity; }

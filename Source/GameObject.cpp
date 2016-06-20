@@ -17,6 +17,11 @@ bool GameObject::CreateTexture(Renderer& renderer, std::string filename)
 	return m_Texture.CreateFromFile(renderer, filename);
 }
 
+bool GameObject::CreateTextureFromText(Renderer& renderer, std::string text, FontTTF& font)
+{
+	return m_Texture.CreateFromText(renderer, text, font);
+}
+
 void GameObject::Render(Renderer& renderer) const
 {
 	Vec2D render_pos = m_Position + m_AnchorPt;
