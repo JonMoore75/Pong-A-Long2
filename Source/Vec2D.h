@@ -10,8 +10,6 @@ public:
 
 	Vec2D& operator=(const Vec2D& rhs);
 
-	Vec2D operator+(const Vec2D& rhs)const;
-	Vec2D operator-(const Vec2D& rhs)const;
 	Vec2D operator-();
 
 	void operator+=(const Vec2D& rhs);
@@ -45,6 +43,10 @@ Vec2D operator*(const Vec2D& v, double s);
 Vec2D operator*(double s, const Vec2D& v);
 
 Vec2D operator/(const Vec2D& v, double s);
+
+Vec2D operator+(const Vec2D& lhs, const Vec2D& rhs);
+Vec2D operator-(const Vec2D& lhs, const Vec2D& rhs);
+
 
 #endif Vec2D_h__
 

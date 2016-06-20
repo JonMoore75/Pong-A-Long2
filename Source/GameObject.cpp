@@ -19,9 +19,26 @@ bool GameObject::CreateTexture(Renderer& renderer, std::string filename)
 
 void GameObject::Render(Renderer& renderer) const
 {
-	m_Texture.Render(renderer, m_Position.intX(), m_Position.intY());
+	Vec2D render_pos = m_Position + m_AnchorPt;
+	m_Texture.Render(renderer, render_pos.intX(), render_pos.intY());
 }
 
+void GameObject::SetAnchorPt(AnchorPt anchor)
+{
+	if (anchor == CENTRE || anchor == TOPCENTRE || anchor == LOWCENTRE)
+		m_AnchorPt.x = -m_Texture.GetWidth() / 2;
+	else if (anchor == RIGHT || anchor == TOPRIGHT || anchor == LOWRIGHT)
+		m_AnchorPt.x = -m_Texture.GetWidth();
+	else
+		m_AnchorPt.x = 0;
+
+	if (anchor == LEFT || anchor == CENTRE || anchor == RIGHT)
+		m_AnchorPt.y = -m_Texture.GetHeight() / 2;
+	else if (anchor == LOWLEFT || anchor == LOWCENTRE || anchor == LOWRIGHT)
+		m_AnchorPt.y = -m_Texture.GetHeight();
+	else
+		m_AnchorPt.y = 0;
+}
 void GameObject::Update(double dt)
 {
 	m_Position += m_Velocity*dt;

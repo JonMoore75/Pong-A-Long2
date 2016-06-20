@@ -10,6 +10,8 @@ class Renderer;
 class GameObject
 {
 public:
+	enum AnchorPt { TOPLEFT, TOPCENTRE, TOPRIGHT, LEFT, CENTRE, RIGHT, LOWLEFT, LOWCENTRE, LOWRIGHT, CUSTOM };
+
 	GameObject();
 	virtual ~GameObject();
 
@@ -25,9 +27,14 @@ public:
 	void SetVelocity(const Vec2D& velocity) { m_Velocity = velocity; }
 	void SetPosition(const Vec2D& position) { m_Position = position; }
 
+	void SetAnchorPt(AnchorPt anchor);
+	void SetAnchorPt(Vec2D anchorpt) { m_AnchorPt = anchorpt; }
+
 	void Update(double dt);
 
 protected:
+	Vec2D m_AnchorPt = { 0., 0. };
+
 	Vec2D m_Position;
 	Vec2D m_Velocity;
 

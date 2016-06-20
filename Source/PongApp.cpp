@@ -17,7 +17,7 @@ bool PongApp::AppInit()
 	// Ball Creation
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
-
+	m_Ball.SetAnchorPt(GameObject::CENTRE);
 	ResetBall();
 
 	FontTTF arialFont;
@@ -107,6 +107,6 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 void PongApp::ResetBall()
 {
 	m_Ball.SetVelocity(Vec2D());
-	m_Ball.SetPosition( Vec2D( m_Window.GetWidth() / 2 - m_Ball.GetWidth() / 2,
-						m_Window.GetHeight() / 2 - m_Ball.GetHeight() / 2 ) );
+	m_Ball.SetPosition( Vec2D( m_Window.GetWidth() / 2 ,
+						m_Window.GetHeight() / 2  ) );
 }
