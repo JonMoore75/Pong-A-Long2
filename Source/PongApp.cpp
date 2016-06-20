@@ -21,9 +21,9 @@ bool PongApp::AppInit()
 	ResetBall();
 
 	FontTTF arialFont;
-	if (arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 16, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
+	if (arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
 	{
-		bool success = m_textInstruct.CreateFromText(renderer, "Press space to reset ball", arialFont);
+		bool success = m_textInstruct.CreateFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont);
 		
 		return success;
 	}
@@ -91,6 +91,9 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 		break;
 	case SDLK_SPACE:
 		ResetBall();
+		break;
+	case SDLK_ESCAPE:
+		m_Running = false;
 		break;
 	}
 

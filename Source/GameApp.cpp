@@ -29,7 +29,7 @@ void GameApp::Cleanup()
 	SDL_Quit();
 }
 
-bool GameApp::Init()
+bool GameApp::Init(WindowCreationParams& createParam)
 {
 	// Initialise SDL, report error if it fails
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -61,15 +61,15 @@ bool GameApp::Init()
 	if (!m_Window.Create("Test Window",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		640, 480,
-		SDL_WINDOW_SHOWN /*| SDL_WINDOW_RESIZABLE*/))
+		createParam.iWidth, createParam.iHeight,
+		SetWindowCreateFlags(createParam)))
 	{
 		Error2MsgBox("Window Creation Failed.\n");
 		return false;
 	}
 
 	// Creates a renderer and clears the window
-	if (!m_Window.CreateRenderer())
+	if (!m_Window.CreateRenderer( SetRendererCreateFlags(createParam) ))
 	{
 		Error2MsgBox("Renderer Creation Failed.\n");
 		return false;
@@ -78,6 +78,36 @@ bool GameApp::Init()
 	m_Timer.Initialize();
 
 	return AppInit();
+}
+
+Uint32 GameApp::SetRendererCreateFlags(WindowCreationParams &createParam)
+{
+	Uint32 iFlags = createParam.bSoftwareRender ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED;
+
+	if (createParam.bVSync)
+		iFlags |= SDL_RENDERER_PRESENTVSYNC;
+	if (createParam.bTextureRender)
+		iFlags |= SDL_RENDERER_TARGETTEXTURE;
+
+	return iFlags;
+}
+
+Uint32 GameApp::SetWindowCreateFlags(WindowCreationParams &createParam)
+{
+	Uint32 iFlags = SDL_WINDOW_SHOWN;
+	if (createParam.Resizeable)
+		iFlags |= SDL_WINDOW_RESIZABLE;
+	if (createParam.bFullscreen)
+		iFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (createParam.bOpenGL)
+		iFlags |= SDL_WINDOW_OPENGL;
+	if (createParam.bBorderless)
+		iFlags |= SDL_WINDOW_BORDERLESS;
+	if (createParam.bMouseGrab)
+		iFlags |= SDL_WINDOW_INPUT_GRABBED;
+	if (createParam.bMouseCapture)
+		iFlags |= SDL_WINDOW_MOUSE_CAPTURE;
+	return iFlags;
 }
 
 void GameApp::HandleEvents()
@@ -131,10 +161,10 @@ void GameApp::Render()
 	}
 }
 
-int GameApp::Execute()
+int GameApp::Execute(WindowCreationParams& createParam)
 {
 	// Initialise SDL and create window
-	if (!Init())
+	if (!Init(createParam))
 		return -1;
 
 	MainLoop();
