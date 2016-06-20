@@ -19,24 +19,6 @@ Vec2D& Vec2D::operator=(const Vec2D& rhs)
 	return *this;
 }
 
-Vec2D Vec2D::operator+(const Vec2D& rhs) const
-{
-	Vec2D result;
-	result.x = x + rhs.x;
-	result.y = y + rhs.y;
-
-	return result;
-}
-
-Vec2D Vec2D::operator-(const Vec2D& rhs) const
-{
-	Vec2D result;
-	result.x = x - rhs.x;
-	result.y = y - rhs.y;
-
-	return result;
-}
-
 Vec2D Vec2D::operator-()
 {
 	Vec2D result;
@@ -141,6 +123,24 @@ Vec2D operator/(const Vec2D& v, double s)
 		result.x = v.x / s;
 		result.y = v.y / s;
 	}
+
+	return result;
+}
+
+Vec2D operator+(const Vec2D& lhs, const Vec2D& rhs)
+{
+	Vec2D result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+
+	return result;
+}
+
+Vec2D operator-(const Vec2D& lhs, const Vec2D& rhs)
+{
+	Vec2D result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
 
 	return result;
 }

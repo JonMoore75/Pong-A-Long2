@@ -10,10 +10,13 @@ class Renderer;
 class GameObject
 {
 public:
+	enum AnchorPt { TOPLEFT, TOPCENTRE, TOPRIGHT, LEFT, CENTRE, RIGHT, LOWLEFT, LOWCENTRE, LOWRIGHT, CUSTOM };
+
 	GameObject();
 	virtual ~GameObject();
 
 	bool CreateTexture(Renderer& renderer, std::string filename);
+	bool CreateTextureFromText(Renderer& renderer, std::string text, FontTTF& font);
 	void Render(Renderer& renderer) const;
 
 	const Vec2D& GetVel() const { return m_Velocity; }
@@ -25,9 +28,14 @@ public:
 	void SetVelocity(const Vec2D& velocity) { m_Velocity = velocity; }
 	void SetPosition(const Vec2D& position) { m_Position = position; }
 
+	void SetAnchorPt(AnchorPt anchor);
+	void SetAnchorPt(Vec2D anchorpt) { m_AnchorPt = anchorpt; }
+
 	void Update(double dt);
 
 protected:
+	Vec2D m_AnchorPt = { 0., 0. };
+
 	Vec2D m_Position;
 	Vec2D m_Velocity;
 
