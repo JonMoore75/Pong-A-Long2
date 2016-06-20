@@ -16,8 +16,8 @@ public:
 
 	void Release();
 
-	void Render(Renderer& renderer, int x, int y);
-	void RenderStretch(Renderer& renderer, SDL_Rect* pDestRect = nullptr);
+	void Render(Renderer& renderer, int x, int y) const;
+	void RenderStretch(Renderer& renderer, SDL_Rect* pDestRect = nullptr) const;
 
 	void SetClipRect(SDL_Rect* rect) { m_pClipRect = rect; }
 
@@ -28,8 +28,8 @@ public:
 
 	bool CreateFromSurface(SDL_Surface* textSurface, Renderer &renderer);
 
-	int GetHeight() { return m_Height; }
-	int GetWidth() { return m_Width; }
+	int GetHeight() const { return m_Height; }
+	int GetWidth() const { return m_Width; }
 
 private:
 	SDL_Texture*  m_pTexture = nullptr;
