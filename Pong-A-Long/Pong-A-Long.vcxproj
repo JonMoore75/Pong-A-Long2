@@ -135,6 +135,7 @@
     <ClCompile Include="..\Source\SDLErrorReport.cpp" />
     <ClCompile Include="..\Source\Texture.cpp" />
     <ClCompile Include="..\Source\TimeKeeper.cpp" />
+    <ClCompile Include="..\Source\Vec2D.cpp" />
     <ClCompile Include="..\Source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="..\Source\SDLErrorReport.h" />
     <ClInclude Include="..\Source\Texture.h" />
     <ClInclude Include="..\Source\TimeKeeper.h" />
+    <ClInclude Include="..\Source\Vec2D.h" />
     <ClInclude Include="..\Source\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

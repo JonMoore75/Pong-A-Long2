@@ -5,6 +5,7 @@
 #include "GameApp.h"
 #include "Texture.h"
 #include "Font_TTF.h"
+#include "Vec2D.h"
 
 class PongApp : public GameApp
 {
@@ -25,11 +26,8 @@ public:
 private:
 	void ResetBall();
 
-	double m_Ball_PosX = 0.0;
-	double m_Ball_PosY = 0.0;
-
-	double m_Ball_VelX = 200.;
-	double m_Ball_VelY = 200.;
+	Vec2D m_Ball_Pos;
+	Vec2D m_Ball_Vel;
 
 	double m_Ball_Speed = 200.;
 
