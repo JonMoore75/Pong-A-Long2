@@ -25,13 +25,13 @@ void Texture::Release()
 	m_Height = 0;
 }
 
-void Texture::Render(Renderer& renderer, int x, int y)
+void Texture::Render(Renderer& renderer, int x, int y) const
 {
 	SDL_Rect image_rect = { x,y, m_Width, m_Height };
 	RenderStretch(renderer, &image_rect);
 }
 
-void Texture::RenderStretch(Renderer& renderer, SDL_Rect* pDestRect /*= nullptr*/)
+void Texture::RenderStretch(Renderer& renderer, SDL_Rect* pDestRect /*= nullptr*/) const
 {
 	if (renderer.GetRenderPtr() && m_pTexture)
 		SDL_RenderCopy(renderer.GetRenderPtr(), m_pTexture, m_pClipRect, pDestRect);
