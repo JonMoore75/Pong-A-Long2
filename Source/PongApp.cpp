@@ -40,13 +40,12 @@ void PongApp::AppCleanup()
 void PongApp::AppRender(Renderer& renderer)
 {
 	m_textInstruct.Render(renderer, 0, 0);
-	m_Ball.Render(renderer, static_cast<int>(m_Ball_PosX), static_cast<int>(m_Ball_PosY));
+	m_Ball.Render(renderer, m_Ball_Pos.intX(), m_Ball_Pos.intY());
 }
 
 void PongApp::AppUpdate(double dt)
 {
-	m_Ball_PosX += m_Ball_VelX*dt;
-	m_Ball_PosY += m_Ball_VelY*dt;
+	m_Ball_Pos += m_Ball_Vel*dt;
 }
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
@@ -54,16 +53,16 @@ bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 	switch (key)
 	{
 	case SDLK_LEFT:
-		m_Ball_VelX = -m_Ball_Speed;
+		m_Ball_Vel.x = -m_Ball_Speed;
 		break;
 	case SDLK_RIGHT:
-		m_Ball_VelX = m_Ball_Speed;
+		m_Ball_Vel.x = m_Ball_Speed;
 		break;
 	case SDLK_UP:
-		m_Ball_VelY = -m_Ball_Speed;
+		m_Ball_Vel.y = -m_Ball_Speed;
 		break;
 	case SDLK_DOWN:
-		m_Ball_VelY = m_Ball_Speed;
+		m_Ball_Vel.y = m_Ball_Speed;
 		break;
 	}
 
@@ -75,20 +74,20 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 	switch (key)
 	{
 	case SDLK_LEFT:
-		if (m_Ball_VelX < 0.0)
-			m_Ball_VelX = 0.0;
+		if (m_Ball_Vel.x < 0.0)
+			m_Ball_Vel.x = 0.0;
 		break;
 	case SDLK_RIGHT:
-		if (m_Ball_VelX > 0.0)
-			m_Ball_VelX = 0.0;
+		if (m_Ball_Vel.x > 0.0)
+			m_Ball_Vel.x = 0.0;
 		break;
 	case SDLK_UP:
-		if (m_Ball_VelY < 0.0)
-			m_Ball_VelY = 0.0;
+		if (m_Ball_Vel.y < 0.0)
+			m_Ball_Vel.y = 0.0;
 		break;
 	case SDLK_DOWN:
-		if (m_Ball_VelY > 0.0)
-			m_Ball_VelY = 0.0;
+		if (m_Ball_Vel.y > 0.0)
+			m_Ball_Vel.y = 0.0;
 		break;
 	case SDLK_SPACE:
 		ResetBall();
@@ -100,10 +99,8 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 
 void PongApp::ResetBall()
 {
-	m_Ball_VelX = 0.0;
-	m_Ball_VelY = 0.0;
+	m_Ball_Vel = Vec2D();
 
-	m_Ball_PosX = m_Window.GetWidth() / 2 - m_Ball.GetWidth() / 2;
-	m_Ball_PosY = m_Window.GetHeight() / 2 - m_Ball.GetHeight() / 2;
+	m_Ball_Pos.x = m_Window.GetWidth() / 2 - m_Ball.GetWidth() / 2;
+	m_Ball_Pos.y = m_Window.GetHeight() / 2 - m_Ball.GetHeight() / 2;
 }
-
