@@ -28,9 +28,9 @@ private:
 	void ResetBall();
 
 	GameObject m_Ball;
-	double m_Ball_Speed = 200.;
+	GameObject m_textInstruct;
 
-	Texture m_textInstruct;
+	double m_Ball_Speed = 200.;
 };
 
 #endif // PongApp_h__
