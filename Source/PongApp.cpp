@@ -1,5 +1,7 @@
 #include "PongApp.h"
 
+#include <random> 
+
 PongApp::PongApp(std::string appname) : GameApp(appname)
 {
 
@@ -25,7 +27,7 @@ bool PongApp::AppInit()
 	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
 		return false;
 
-	if (!m_textInstruct.CreateTextureFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont))
+	if (!m_textInstruct.CreateTextureFromText(renderer, "Press space to reset ball with random direction", arialFont))
 		return false;
 
 	return true;
@@ -45,68 +47,73 @@ void PongApp::AppRender(Renderer& renderer)
 void PongApp::AppUpdate(double dt)
 {
 	m_Ball.Update(dt);
+
+	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
+	CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
+
+	CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
+	CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
 }
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
-	Vec2D vel = m_Ball.GetVel();
-	switch (key)
-	{
-	case SDLK_LEFT:
-		vel.x = -m_Ball_Speed;
-		break;
-	case SDLK_RIGHT:
-		vel.x = m_Ball_Speed;
-		break;
-	case SDLK_UP:
-		vel.y = -m_Ball_Speed;
-		break;
-	case SDLK_DOWN:
-		vel.y = m_Ball_Speed;
-		break;
-	}
-	m_Ball.SetVelocity(vel);
-
 	return true;
 }
 
 bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 {
-	Vec2D vel = m_Ball.GetVel();
-	switch (key)
-	{
-	case SDLK_LEFT:
-		if (vel.x < 0.0)
-			vel.x = 0.0;
-		break;
-	case SDLK_RIGHT:
-		if (vel.x > 0.0)
-			vel.x = 0.0;
-		break;
-	case SDLK_UP:
-		if (vel.y < 0.0)
-			vel.y = 0.0;
-		break;
-	case SDLK_DOWN:
-		if (vel.y > 0.0)
-			vel.y = 0.0;
-		break;
+ 	switch (key)
+ 	{
 	case SDLK_SPACE:
 		ResetBall();
-		vel = m_Ball.GetVel();
-		break;
-	case SDLK_ESCAPE:
-		m_Running = false;
-		break;
-	}
-	m_Ball.SetVelocity(vel);
+ 		break;
+ 	case SDLK_ESCAPE:
+ 		m_Running = false;
+ 		break;
+ 	}
 
 	return true;
 }
 
 void PongApp::ResetBall()
 {
-	m_Ball.SetVelocity(Vec2D());
+	static const double angl_conv = 2. * 3.14159265 / 360;
+	static std::default_random_engine generator;
+	static std::uniform_int_distribution<int> distribution(0, 360);
+
+	double angle = distribution(generator);
+
+	double x = m_Ball_Speed*cos(angle*angl_conv);
+	double y = m_Ball_Speed*sin(angle*angl_conv);
+
+	m_Ball.SetVelocity( Vec2D(x, y) );
 	m_Ball.SetPosition( Vec2D( m_Window.GetWidth() / 2 ,
 						m_Window.GetHeight() / 2  ) );
+}
+
+void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
+{
+	double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
+	double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
+
+	if (velocity > 0.0 && dirn == GRTERTHAN) // Going down/right
+	{
+		double edge = position + circle_radius;
+
+		if (edge > planePos)
+		{
+			position = position - 2 * (edge - planePos);
+			velocity = -velocity;
+		}
+	}
+	else if (velocity < 0.0 && dirn == LESSTHAN)// Going up/left
+	{
+		double edge = position - circle_radius;
+
+		if (edge < planePos)
+		{
+			position = position + 2 * (planePos - edge);
+			velocity = -velocity;
+		}
+	}
 }

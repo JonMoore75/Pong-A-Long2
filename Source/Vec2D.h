@@ -33,14 +33,14 @@ public:
 
 	Vec2D& Reflect(const Vec2D& normal);
 
-	Vec2D SolveSimultaneous(double a, double b, double c, double d, Vec2D B);
-
 	// Data members.
 	double x;
 	double y;
 
 private:
 };
+
+Vec2D SolveSimultaneous(double a, double b, double c, double d, Vec2D B);
 
 
 // Define with left hand and right hand sides reversed
