@@ -8,6 +8,8 @@ public:
 	Vec2D(double _x = 0.0, double _y = 0.0);
 	~Vec2D() {}
 
+	enum ROT_DIRN { CLOCKWISE, ANTICLOCKWISE };
+
 	Vec2D& operator=(const Vec2D& rhs);
 
 	Vec2D operator-();
@@ -25,9 +27,13 @@ public:
 	double Length() const;
 	Vec2D& Normalize();
 
+	Vec2D Perpendicular(ROT_DIRN dirn);
+
 	double dot(const Vec2D& rhs) const;
 
 	Vec2D& Reflect(const Vec2D& normal);
+
+	Vec2D SolveSimultaneous(double a, double b, double c, double d, Vec2D B);
 
 	// Data members.
 	double x;
