@@ -44,6 +44,8 @@ private:
 	bool m_bShowDot = false;
 
 	double m_Ball_Speed = 200.;
+
+	std::unique_ptr<Vec2D> m_pNextCollisonNormal;
 };
 
 #endif // PongApp_h__

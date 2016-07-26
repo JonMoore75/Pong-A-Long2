@@ -90,13 +90,22 @@ void PongApp::AppUpdate(double dt)
 		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle);
 	}
 
-	m_Ball.Update(dt);
+	if (m_pNextCollisonNormal)
+	{
+		m_Ball.Update(col_dt);
+		m_Ball.GetVel().Reflect(*m_pNextCollisonNormal);
+		m_Ball.Update(dt - col_dt);
 
-	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
+		m_pNextCollisonNormal.release();
+	}
+	else
+		m_Ball.Update(dt);
 
-	CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
-	CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
+// 	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
+// 	CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
+// 
+// 	CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
+// 	CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
 }
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
@@ -171,7 +180,7 @@ void PongApp::CheckForCircleLineCollision(double& dt, const LineCollider& line, 
 	{
 		Vec2D ratio = SolveSimultaneous(line.m_Line.x, -circle.m_Velocity.x*dt, line.m_Line.y, -circle.m_Velocity.y*dt, B);
 
-		if (ratio.x > 0.0 && ratio.x <= 1.0 && ratio.y > 0.0 /*&& ratio.y <= 1.0*/)
+		if (ratio.x > 0.0 && ratio.x <= 1.0 && ratio.y > 0.0 )
 		{
 			Vec2D contact_pt = line.m_Position + ratio.x*line.m_Line;
 			Vec2D collision_pt = contact_pt + line.m_Normal*circle.m_Radius;
@@ -181,7 +190,11 @@ void PongApp::CheckForCircleLineCollision(double& dt, const LineCollider& line, 
 			m_TargetDot.SetPosition(contact_pt);
 			m_bShowDot = true;
 
-			dt = time2collision;
+			if (time2collision < dt && ratio.y <= 1.0 )
+			{
+				dt = time2collision;
+				m_pNextCollisonNormal.reset(new Vec2D(line.m_Normal));
+			}
 		}
 	}
 }
