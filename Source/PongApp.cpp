@@ -23,6 +23,11 @@ bool PongApp::AppInit()
 	m_Ball.SetAnchorPt(GameObject::CENTRE);
 	ResetBall();
 
+	// Dot creation 
+	if (!m_TargetDot.CreateTexture(renderer, "..\\gfx\\dot.png"))
+		return false;
+	m_TargetDot.SetAnchorPt(GameObject::CENTRE);
+
 	FontTTF arialFont;
 	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
 		return false;
@@ -42,10 +47,25 @@ void PongApp::AppRender(Renderer& renderer)
 {
 	m_textInstruct.Render(renderer);
 	m_Ball.Render(renderer);
+
+	if (m_bShowDot)
+		m_TargetDot.Render(renderer);
 }
 
 void PongApp::AppUpdate(double dt)
 {
+	m_bShowDot = false;
+
+	int w = m_Window.GetWidth();
+	int h = m_Window.GetHeight();
+
+	double col_dt = dt;
+
+	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1) ), m_Ball, m_Ball.GetHeight() / 2);
+	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0) ), m_Ball, m_Ball.GetHeight() / 2);
+	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1) ), m_Ball, m_Ball.GetHeight() / 2);
+	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0) ), m_Ball, m_Ball.GetHeight() / 2);
+
 	m_Ball.Update(dt);
 
 	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
@@ -114,6 +134,31 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 		{
 			position = position + 2 * (planePos - edge);
 			velocity = -velocity;
+		}
+	}
+}
+
+void PongApp::CheckForCircleLineCollision(double& dt, LineCollider& line, GameObject& circle_obj, double circle_radius)
+{
+	Vec2D& circle_vel = circle_obj.GetVel();
+	Vec2D B = circle_obj.GetPos() - (line.m_position + line.m_Normal*circle_radius);
+
+	// If moving towards outside of plane
+	if (circle_vel.dot(line.m_Normal) < 0.0)
+	{
+		Vec2D ratio = SolveSimultaneous(line.m_Line.x, -circle_vel.x*dt, line.m_Line.y, -circle_vel.y*dt, B);
+
+		if (ratio.x > 0.0 && ratio.x <= 1.0 && ratio.y > 0.0 /*&& ratio.y <= 1.0*/)
+		{
+			Vec2D contact_pt = line.m_position + ratio.x*line.m_Line;
+			Vec2D collision_pt = contact_pt + line.m_Normal*circle_radius;
+			double time2collision = ratio.y*dt;
+			double dist2collision = time2collision*m_Ball_Speed;
+
+			m_TargetDot.SetPosition(contact_pt);
+			m_bShowDot = true;
+
+			dt = time2collision;
 		}
 	}
 }
