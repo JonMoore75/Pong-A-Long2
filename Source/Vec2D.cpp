@@ -83,6 +83,14 @@ Vec2D& Vec2D::Normalize()
 	return *this;
 }
 
+Vec2D Vec2D::Perpendicular(ROT_DIRN dirn)
+{
+	if (dirn == CLOCKWISE)
+		return Vec2D(-y, x);
+	else
+		return Vec2D(y, -x);
+}
+
 double Vec2D::dot(const Vec2D& rhs) const
 {
 	return x*rhs.x + y*rhs.y;
@@ -93,6 +101,33 @@ Vec2D& Vec2D::Reflect(const Vec2D& normal)
 	Vec2D I = *this;
 
 	return *this = -2.0f * dot(normal) * normal + I;
+}
+
+Vec2D SolveSimultaneous(double a, double b, double c, double d, Vec2D B)
+{
+	double g, h, x, y;
+	if (abs(a) > abs(c))
+	{
+		g = B.x * c / a;
+		h = b * c / a;
+		y = (B.y - g) / (d - h);
+		if (c != 0)
+			x = (g - h * y) / c;
+		else
+			x = (B.x - b * y) / a;
+	}
+	else
+	{
+		g = B.y * a / c;
+		h = d * a / c;
+		y = (B.x - g) / (b - h);
+		if (a != 0)
+			x = (g - h * y) / a;
+		else
+			x = (B.y - d * y) / c;
+	}
+
+	return Vec2D(x, y);
 }
 
 // ------------------------------------------------------------------
