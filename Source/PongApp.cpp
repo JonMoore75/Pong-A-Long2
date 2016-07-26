@@ -20,6 +20,7 @@ bool PongApp::AppInit()
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
 
+	m_Ball.SetCollider( std::unique_ptr<Collider>(  new CircleCollider( Vec2D(), m_Ball.GetHeight()/2 ) ) );
 	m_Ball.SetAnchorPt(GameObject::CENTRE);
 	ResetBall();
 
@@ -79,10 +80,15 @@ void PongApp::AppUpdate(double dt)
 
 	double col_dt = dt;
 
-	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1) ), m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0) ), m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1) ), m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleLineCollision(col_dt, LineCollider( Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0) ), m_Ball, m_Ball.GetHeight() / 2);
+	CircleCollider* pCircle = dynamic_cast<CircleCollider*>(m_Ball.GetCollider());
+
+	if (pCircle)
+	{
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1)), *pCircle);
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0)), *pCircle);
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1)), *pCircle);
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle);
+	}
 
 	m_Ball.Update(dt);
 
@@ -156,20 +162,19 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	}
 }
 
-void PongApp::CheckForCircleLineCollision(double& dt, LineCollider& line, GameObject& circle_obj, double circle_radius)
+void PongApp::CheckForCircleLineCollision(double& dt, const LineCollider& line, const CircleCollider& circle)
 {
-	Vec2D& circle_vel = circle_obj.GetVel();
-	Vec2D B = circle_obj.GetPos() - (line.m_position + line.m_Normal*circle_radius);
+	Vec2D B = circle.m_Position- (line.m_Position + line.m_Normal*circle.m_Radius);
 
 	// If moving towards outside of plane
-	if (circle_vel.dot(line.m_Normal) < 0.0)
+	if (circle.m_Velocity.dot(line.m_Normal) < 0.0)
 	{
-		Vec2D ratio = SolveSimultaneous(line.m_Line.x, -circle_vel.x*dt, line.m_Line.y, -circle_vel.y*dt, B);
+		Vec2D ratio = SolveSimultaneous(line.m_Line.x, -circle.m_Velocity.x*dt, line.m_Line.y, -circle.m_Velocity.y*dt, B);
 
 		if (ratio.x > 0.0 && ratio.x <= 1.0 && ratio.y > 0.0 /*&& ratio.y <= 1.0*/)
 		{
-			Vec2D contact_pt = line.m_position + ratio.x*line.m_Line;
-			Vec2D collision_pt = contact_pt + line.m_Normal*circle_radius;
+			Vec2D contact_pt = line.m_Position + ratio.x*line.m_Line;
+			Vec2D collision_pt = contact_pt + line.m_Normal*circle.m_Radius;
 			double time2collision = ratio.y*dt;
 			double dist2collision = time2collision*m_Ball_Speed;
 
