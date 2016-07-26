@@ -45,6 +45,8 @@ private:
 	GameObject m_Ball;
 	GameObject m_textInstruct;
 	GameObject m_TargetDot;
+	GameObject m_LeftPaddle;
+	GameObject m_RightPaddle;
 
 	bool m_bShowDot = false;
 

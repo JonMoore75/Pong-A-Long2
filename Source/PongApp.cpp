@@ -28,6 +28,21 @@ bool PongApp::AppInit()
 		return false;
 	m_TargetDot.SetAnchorPt(GameObject::CENTRE);
 
+	int paddle_y = m_Window.GetHeight() / 2;
+	int paddle_x = 20;
+
+	// Left paddle creation 
+	if (!m_LeftPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
+		return false;
+	m_LeftPaddle.SetAnchorPt(GameObject::CENTRE);
+	m_LeftPaddle.SetPosition(Vec2D(paddle_x, paddle_y));
+
+	// Right paddle creation
+	if (!m_RightPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
+		return false;
+	m_RightPaddle.SetAnchorPt(GameObject::CENTRE);
+	m_RightPaddle.SetPosition(Vec2D(m_Window.GetWidth() - paddle_x, paddle_y));
+
 	FontTTF arialFont;
 	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
 		return false;
@@ -47,6 +62,9 @@ void PongApp::AppRender(Renderer& renderer)
 {
 	m_textInstruct.Render(renderer);
 	m_Ball.Render(renderer);
+
+	m_LeftPaddle.Render(renderer);
+	m_RightPaddle.Render(renderer);
 
 	if (m_bShowDot)
 		m_TargetDot.Render(renderer);
