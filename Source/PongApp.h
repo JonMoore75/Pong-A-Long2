@@ -11,14 +11,7 @@
 enum AXIS { XAXIS, YAXIS };
 enum DIRN { LESSTHAN, GRTERTHAN };
 
-class LineCollider
-{
-public:
-	LineCollider(Vec2D pos, Vec2D line, Vec2D norm) : m_position(pos), m_Line(line), m_Normal(norm) {}
-	Vec2D m_position;
-	Vec2D m_Line;
-	Vec2D m_Normal;
-};
+
 
 class PongApp : public GameApp
 {
@@ -33,6 +26,7 @@ public:
 
 	void AppUpdate(double dt);
 
+
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
@@ -40,15 +34,24 @@ private:
 	void ResetBall();
 
 	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
-	void CheckForCircleLineCollision(double& dt, LineCollider& line, GameObject& circle_obj, double circle_radius);
+	void CheckForCircleLineCollision(double& dt, const LineCollider& line, const CircleCollider& circle);
+	void CheckForCirclePointCollision(double& dt, const Vec2D& point, const CircleCollider& circle);
+
+	void TestForWallCollisions(double& col_dt);
+	void TestForPaddleCollision(double& dt, Vec2D& paddle_pos, double paddle_width, double paddle_height);
 
 	GameObject m_Ball;
 	GameObject m_textInstruct;
 	GameObject m_TargetDot;
+	GameObject m_LeftPaddle;
+	GameObject m_RightPaddle;
 
 	bool m_bShowDot = false;
+	bool m_bContCollisionDetect = true;
 
 	double m_Ball_Speed = 200.;
+
+	std::unique_ptr<Vec2D> m_pNextCollisonNormal;
 };
 
 #endif // PongApp_h__

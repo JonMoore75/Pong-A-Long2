@@ -2,7 +2,7 @@
 
 #include "Renderer.h"
 
-GameObject::GameObject()
+GameObject::GameObject() : m_pCollider( new Collider)
 {
 
 }
@@ -24,7 +24,7 @@ bool GameObject::CreateTextureFromText(Renderer& renderer, std::string text, Fon
 
 void GameObject::Render(Renderer& renderer) const
 {
-	Vec2D render_pos = m_Position + m_AnchorPt;
+	Vec2D render_pos = m_pCollider->m_Position + m_AnchorPt;
 	m_Texture.Render(renderer, render_pos.intX(), render_pos.intY());
 }
 
@@ -46,6 +46,6 @@ void GameObject::SetAnchorPt(AnchorPt anchor)
 }
 void GameObject::Update(double dt)
 {
-	m_Position += m_Velocity*dt;
+	m_pCollider->Update(dt);
 }
 
