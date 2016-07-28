@@ -17,6 +17,8 @@ bool PongApp::AppInit()
 {
 	Renderer& renderer = m_Window.GetRenderer();
 
+	m_paddle_max += m_Window.GetHeight();
+
 	// Ball Creation
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
@@ -102,6 +104,28 @@ void PongApp::AppUpdate(double dt)
 		CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
 		CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
 	}
+
+	MovePaddle(dt, m_LeftPaddleMove, m_LeftPaddle);
+	MovePaddle(dt, m_RightPaddleMove, m_RightPaddle);
+
+}
+
+void PongApp::MovePaddle(double dt, PADDLE_MOVE move, GameObject& paddle)
+{
+	double& y = paddle.GetPos().y;
+	switch (move)
+	{
+	case UP:
+		y -= paddle_speed*dt;
+		if (y < m_paddle_min)
+			y = m_paddle_min;
+		break;
+	case DOWN:
+		y += paddle_speed*dt;
+		if (y > m_paddle_max)
+			y = m_paddle_max;
+		break;
+	}
 }
 
 void PongApp::TestForWallCollisions(double& col_dt)
@@ -144,6 +168,21 @@ void PongApp::TestForPaddleCollision(double& col_dt, Vec2D& paddle_pos, double p
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
+	switch (key)
+	{
+	case SDLK_w:
+		m_LeftPaddleMove = UP;
+		break;
+	case SDLK_s:
+		m_LeftPaddleMove = DOWN;
+		break;
+	case  SDLK_UP:
+		m_RightPaddleMove = UP;
+		break;
+	case SDLK_DOWN:
+		m_RightPaddleMove = DOWN;
+		break;
+	}
 	return true;
 }
 
@@ -151,6 +190,22 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 {
  	switch (key)
  	{
+	case SDLK_w:
+		if (m_LeftPaddleMove == UP)
+			m_LeftPaddleMove = STOP;
+		break;
+	case SDLK_s:
+		if (m_LeftPaddleMove == DOWN)
+			m_LeftPaddleMove = STOP;
+		break;
+	case  SDLK_UP:
+		if (m_RightPaddleMove == UP)
+			m_RightPaddleMove = STOP;
+		break;
+	case SDLK_DOWN:
+		if (m_RightPaddleMove == DOWN)
+			m_RightPaddleMove = STOP;
+		break;
 	case SDLK_SPACE:
 		ResetBall();
  		break;
