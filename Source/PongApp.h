@@ -10,7 +10,7 @@
 
 enum AXIS { XAXIS, YAXIS };
 enum DIRN { LESSTHAN, GRTERTHAN };
-
+enum PADDLE_MOVE {UP, STOP, DOWN};
 
 
 class PongApp : public GameApp
@@ -25,6 +25,8 @@ public:
 	void AppRender(Renderer& renderer);
 
 	void AppUpdate(double dt);
+
+	void MovePaddle(double dt, PADDLE_MOVE move, GameObject& paddle);
 
 
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
@@ -45,6 +47,14 @@ private:
 	GameObject m_TargetDot;
 	GameObject m_LeftPaddle;
 	GameObject m_RightPaddle;
+
+	PADDLE_MOVE m_LeftPaddleMove = STOP;
+	PADDLE_MOVE m_RightPaddleMove = STOP;
+
+	int m_paddle_min = 50;
+	int m_paddle_max = -m_paddle_min;
+
+	double paddle_speed = 200.;
 
 	bool m_bShowDot = false;
 	bool m_bContCollisionDetect = true;
