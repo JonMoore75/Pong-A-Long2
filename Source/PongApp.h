@@ -26,6 +26,7 @@ public:
 
 	void AppUpdate(double dt);
 
+
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
@@ -34,6 +35,10 @@ private:
 
 	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
 	void CheckForCircleLineCollision(double& dt, const LineCollider& line, const CircleCollider& circle);
+	void CheckForCirclePointCollision(double& dt, const Vec2D& point, const CircleCollider& circle);
+
+	void TestForWallCollisions(double& col_dt);
+	void TestForPaddleCollision(double& dt, Vec2D& paddle_pos, double paddle_width, double paddle_height);
 
 	GameObject m_Ball;
 	GameObject m_textInstruct;
@@ -42,6 +47,7 @@ private:
 	GameObject m_RightPaddle;
 
 	bool m_bShowDot = false;
+	bool m_bContCollisionDetect = true;
 
 	double m_Ball_Speed = 200.;
 
