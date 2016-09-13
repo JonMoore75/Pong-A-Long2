@@ -98,6 +98,8 @@ void PongApp::AppUpdate(double dt)
 	}
 	else
 	{
+		m_Ball.Update(dt);
+
 		CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
 		CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
 
@@ -138,9 +140,9 @@ void PongApp::TestForWallCollisions(double& col_dt)
 	if (pCircle)
 	{
 		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1)), *pCircle);
-		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0)), *pCircle);
+		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0)), *pCircle);
 		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1)), *pCircle);
-		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle);
+		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle);
 	}
 }
 
@@ -238,25 +240,14 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
 	double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
 
-	if (velocity > 0.0 && dirn == GRTERTHAN) // Going down/right
-	{
-		double edge = position + circle_radius;
+	int g = (dirn == GRTERTHAN) ? 1 : -1;
 
-		if (edge > planePos)
-		{
-			position = position - 2 * (edge - planePos);
-			velocity = -velocity;
-		}
-	}
-	else if (velocity < 0.0 && dirn == LESSTHAN)// Going up/left
-	{
-		double edge = position - circle_radius;
+	double dist = g*(planePos - position) - circle_radius;
 
-		if (edge < planePos)
-		{
-			position = position + 2 * (planePos - edge);
-			velocity = -velocity;
-		}
+	if (dist < 0.0 && g*velocity > 0.0)
+	{
+		position = 2 * (planePos - g*circle_radius) - position;
+		velocity = -velocity;
 	}
 }
 

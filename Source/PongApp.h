@@ -51,6 +51,9 @@ private:
 	PADDLE_MOVE m_LeftPaddleMove = STOP;
 	PADDLE_MOVE m_RightPaddleMove = STOP;
 
+	int m_LeftPlayerScore = 0;
+	int m_RightPlayerScore = 0;
+
 	int m_paddle_min = 50;
 	int m_paddle_max = -m_paddle_min;
 
