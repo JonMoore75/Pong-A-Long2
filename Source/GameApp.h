@@ -4,6 +4,7 @@
 
 #include "Window.h"
 #include "EventHandler.h"
+
 #include "TimeKeeper.h"
 
 struct WindowCreationParams
@@ -30,6 +31,7 @@ class GameApp : public EventHandler
 {
 public:
 	GameApp(std::string appname);
+
 	virtual ~GameApp();
 
 	int Execute(WindowCreationParams& createParam);
