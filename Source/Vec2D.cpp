@@ -103,6 +103,13 @@ Vec2D& Vec2D::Reflect(const Vec2D& normal)
 	return *this = -2.0f * dot(normal) * normal + I;
 }
 
+Vec2D& Vec2D::ApplyImpulse(const Vec2D& normal, const Vec2D& rel_vel)
+{
+	Vec2D old = *this;
+
+	return *this = 2.0f * rel_vel.dot(normal) * normal + old;
+}
+
 Vec2D SolveSimultaneous(double a, double b, double c, double d, Vec2D B)
 {
 	double g, h, x, y;
