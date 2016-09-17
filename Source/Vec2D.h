@@ -33,6 +33,8 @@ public:
 
 	Vec2D& Reflect(const Vec2D& normal);
 
+	Vec2D& ApplyImpulse(const Vec2D& normal, const Vec2D& rel_vel);
+
 	// Data members.
 	double x;
 	double y;
