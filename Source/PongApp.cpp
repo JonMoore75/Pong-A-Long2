@@ -78,11 +78,13 @@ void PongApp::AppUpdate(double dt)
 {
 	m_bShowDot = false;
 
-	if (m_bContCollisionDetect)
-	{
-		double col_dt = 999.;
-		m_pNextCollison.release();
+	double col_dt = 999.;
+	m_pNextCollison.release();
 
+	TestForWinTrigger();
+
+	if (m_WinStatus == NEITHER)
+	{
 		TestForWallCollisions(col_dt);
 		TestForPaddleCollision(col_dt, m_LeftPaddle.GetPos(), m_LeftPaddle.GetVel(), m_LeftPaddle.GetWidth(), m_LeftPaddle.GetHeight());
 		TestForPaddleCollision(col_dt, m_RightPaddle.GetPos(), m_RightPaddle.GetVel(), m_RightPaddle.GetWidth(), m_RightPaddle.GetHeight());
@@ -95,21 +97,10 @@ void PongApp::AppUpdate(double dt)
 		}
 		else
 			m_Ball.Update(dt);
+
+		MovePaddle(dt, m_LeftPaddle);
+		MovePaddle(dt, m_RightPaddle);
 	}
-	else
-	{
-		m_Ball.Update(dt);
-
-		CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
-		CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
-
-		CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
-		CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
-	}
-
-	MovePaddle(dt, m_LeftPaddle);
-	MovePaddle(dt, m_RightPaddle);
-
 }
 
 void PongApp::MovePaddle(double dt, GameObject& paddle)
@@ -132,10 +123,10 @@ void PongApp::TestForWallCollisions(double& col_dt)
 
 	if (pCircle)
 	{
-		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1)), *pCircle);
-		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0)), *pCircle);
-		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1)), *pCircle);
-		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle);
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, 0), Vec2D(w, 0), Vec2D(0, 1)), *pCircle, Vec2D());
+		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, 0), Vec2D(0, h), Vec2D(-1, 0)), *pCircle, Vec2D());
+		CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(w, h), Vec2D(-w, 0), Vec2D(0, -1)), *pCircle, Vec2D());
+		//CheckForCircleLineCollision(col_dt, LineCollider(Vec2D(0, h), Vec2D(0, -h), Vec2D(1, 0)), *pCircle, Vec2D());
 	}
 }
 
@@ -160,6 +151,15 @@ void PongApp::TestForPaddleCollision(double& col_dt, Vec2D& paddle_pos, Vec2D& p
 	}
 }
 
+
+void PongApp::TestForWinTrigger()
+{
+	if (CheckForCircleAxisTrigger(XAXIS, LESSTHAN, -m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth()/2))
+		m_WinStatus = RIGHT;
+
+	if (CheckForCircleAxisTrigger(XAXIS, GRTERTHAN, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+		m_WinStatus = LEFT;
+}
 
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
@@ -231,7 +231,7 @@ void PongApp::ResetBall()
  						m_Window.GetHeight() / 2  ) );
 }
 
-void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
+bool PongApp::CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
 {
 	double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
 	double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
@@ -240,11 +240,7 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 
 	double dist = g*(planePos - position) - circle_radius;
 
-	if (dist < 0.0 && g*velocity > 0.0)
-	{
-		position = 2 * (planePos - g*circle_radius) - position;
-		velocity = -velocity;
-	}
+	return (dist < 0.0 && g*velocity > 0.0);
 }
 
 void PongApp::CheckForCircleLineCollision(double& dt, const LineCollider& line, const CircleCollider& circle, const Vec2D lineVelocity)

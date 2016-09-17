@@ -10,7 +10,7 @@
 
 enum AXIS { XAXIS, YAXIS };
 enum DIRN { LESSTHAN, GRTERTHAN };
-//enum PADDLE_MOVE {UP, STOP, DOWN};
+enum PLAYER_WIN {LEFT, RIGHT, NEITHER};
 
 class CollisionData
 {
@@ -52,21 +52,20 @@ private:
 
 	void MovePaddle(double dt, GameObject& paddle);
 
-	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
+	bool CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
 	void CheckForCircleLineCollision(double& dt, const LineCollider& line, const CircleCollider& circle, const Vec2D lineVelocity);
 	void CheckForCirclePointCollision(double& dt, const Vec2D& point, const CircleCollider& circle, const Vec2D pointVelocity);
 
 	void TestForWallCollisions(double& col_dt);
 	void TestForPaddleCollision(double& dt, Vec2D& paddle_pos, Vec2D& paddle_vel, double paddle_width, double paddle_height);
 
+	void TestForWinTrigger();
+
 	GameObject m_Ball;
 	GameObject m_textInstruct;
 	GameObject m_TargetDot;
 	GameObject m_LeftPaddle;
 	GameObject m_RightPaddle;
-
-// 	PADDLE_MOVE m_LeftPaddleMove = STOP;
-// 	PADDLE_MOVE m_RightPaddleMove = STOP;
 
 	int m_LeftPlayerScore = 0;
 	int m_RightPlayerScore = 0;
@@ -77,9 +76,10 @@ private:
 	double paddle_speed = 200.;
 
 	bool m_bShowDot = false;
-	bool m_bContCollisionDetect = true;
 
 	double m_Ball_Speed = 200.;
+
+	PLAYER_WIN m_WinStatus = NEITHER;
 
 	std::unique_ptr<CollisionData> m_pNextCollison;
 };
