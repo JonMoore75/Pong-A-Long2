@@ -22,6 +22,9 @@ public:
 	const Vec2D& GetVel() const { return m_Velocity; }
 	const Vec2D& GetPos() const { return m_Position; }
 
+	Vec2D& GetVel() { return m_Velocity; }
+	Vec2D& GetPos() { return m_Position; }
+
 	int GetWidth() const { return m_Texture.GetWidth(); }
 	int GetHeight() const { return m_Texture.GetHeight(); }
 
