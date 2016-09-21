@@ -34,6 +34,8 @@ private:
 	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
 
 	GameObject m_Ball;
+	GameObject m_LeftPaddle;
+	GameObject m_RightPaddle;
 	GameObject m_textInstruct;
 
 	double m_Ball_Speed = 200.;
