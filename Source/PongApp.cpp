@@ -73,7 +73,7 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	if (dist < 0.0 && g*velocity > 0.0) 
 	{
 		velocity = -velocity;
-		position = position - 2 * dist;
+		position = position + g * 2 * dist;
 	}
 }
 
