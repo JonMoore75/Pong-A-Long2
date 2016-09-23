@@ -66,6 +66,9 @@ void PongApp::AppUpdate(double dt)
 {
 	m_Ball.Update(dt);
 
+	CheckForBallPaddleCollision(LESSTHAN, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2);
+	CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2);
+
 	TestForWallCollisions();
 }
 
@@ -90,7 +93,35 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	if (dist < 0.0 && g*velocity > 0.0) 
 	{
 		velocity = -velocity;
-		position = position - 2 * dist;
+		position = position + g * 2 * dist;
+	}
+}
+
+void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& circle_obj, double circle_radius)
+{
+	double& position = circle_obj.GetPos().x;
+	double& velocity = circle_obj.GetVel().x;
+
+	int g = (dirn == GRTERTHAN) ? 1 : -1;
+
+	int planePos = int(paddle_obj.GetPos().x - g*paddle_obj.GetWidth() / 2);
+
+	double dist = g*(planePos - position) - circle_radius;
+
+	if (dist < 0.0 && g*velocity > 0.0)
+	{
+		double timeSinceCollision = abs(dist/velocity);
+
+		double ball_y_collision = circle_obj.GetPos().y - circle_obj.GetVel().y*timeSinceCollision;
+
+		int paddle_top = int(paddle_obj.GetPos().y - paddle_obj.GetHeight() / 2);
+		int paddle_bottom = int(paddle_obj.GetPos().y + paddle_obj.GetHeight() / 2);
+
+		if (ball_y_collision >= paddle_top && ball_y_collision <= paddle_bottom)
+		{
+			velocity = -velocity;
+			position = position + g * 2 * dist;
+		}
 	}
 }
 
