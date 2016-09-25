@@ -32,7 +32,7 @@ public:
 private:
 	void ResetBall();
 	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
-	void CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& circle_obj, double circle_radius);
+	void CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
 
 	GameObject m_Ball;
 	GameObject m_LeftPaddle;
@@ -40,6 +40,7 @@ private:
 	GameObject m_textInstruct;
 
 	double m_Ball_Speed = 200.;
+	double m_BounceModifier = m_Ball_Speed*1.5;
 };
 
 #endif // PongApp_h__
