@@ -1,8 +1,5 @@
 #include "PongApp.h"
 
-#include <random>
-#include <chrono>
-
 PongApp::PongApp(std::string appname) : GameApp(appname)
 {
 
@@ -16,6 +13,8 @@ PongApp::~PongApp()
 bool PongApp::AppInit()
 {
 	Renderer& renderer = m_Window.GetRenderer();
+
+	m_paddle_max += m_Window.GetHeight();
 
 	// Ball Creation
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
@@ -67,6 +66,8 @@ void PongApp::AppRender(Renderer& renderer)
 void PongApp::AppUpdate(double dt)
 {
 	m_Ball.Update(dt);
+	MovePaddle(dt, m_LeftPaddle);
+	MovePaddle(dt, m_RightPaddle);
 
 	CheckForBallPaddleCollision(LESSTHAN, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2);
 	CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2);
@@ -117,8 +118,10 @@ void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, Gam
 	{
 		double timeSinceCollision = abs(dist/velocity_x);
 
+		double relativeYVelocity = ball_obj.GetVel().y - paddle_obj.GetVel().y;
+
 		// Find the balls y position relative to paddle centre at time of collision, scaled to half height of paddle
-		double relativeYPosition = (ball_obj.GetPos().y - ball_obj.GetVel().y*timeSinceCollision - paddle_obj.GetPos().y)/paddle_halfheight;
+		double relativeYPosition = (ball_obj.GetPos().y - relativeYVelocity*timeSinceCollision - paddle_obj.GetPos().y)/paddle_halfheight;
 
 		if (relativeYPosition >= -1 && relativeYPosition <= 1)
 		{
@@ -131,15 +134,61 @@ void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, Gam
 	}
 }
 
+void PongApp::MovePaddle(double dt, GameObject& paddle)
+{
+	paddle.Update(dt);
+
+	double& y = paddle.GetPos().y;
+
+	if (y < m_paddle_min)
+		y = m_paddle_min;
+	if (y > m_paddle_max)
+		y = m_paddle_max;
+}
+
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
+	switch (key)
+	{
+	case SDLK_w:
+		m_LeftPaddle.SetVelocity(Vec2D(0, -m_paddle_speed));
+		break;
+	case SDLK_s:
+		m_LeftPaddle.SetVelocity(Vec2D(0, m_paddle_speed));
+		break;
+	case  SDLK_UP:
+		m_RightPaddle.SetVelocity(Vec2D(0, -m_paddle_speed));
+		break;
+	case SDLK_DOWN:
+		m_RightPaddle.SetVelocity(Vec2D(0, m_paddle_speed));
+		break;
+	}
 	return true;
 }
 
 bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 {
+	double& leftVertSpeed = m_LeftPaddle.GetVel().y;
+	double& rightVertSpeed = m_RightPaddle.GetVel().y;
+
 	switch (key)
 	{
+	case SDLK_w:
+		if (leftVertSpeed < 0.0)
+			leftVertSpeed = 0.0;
+		break;
+	case SDLK_s:
+		if (leftVertSpeed > 0.0)
+			leftVertSpeed = 0.0;
+		break;
+	case  SDLK_UP:
+		if (rightVertSpeed < 0.0)
+			rightVertSpeed = 0.0;
+		break;
+	case SDLK_DOWN:
+		if (rightVertSpeed > 0.0)
+			rightVertSpeed = 0.0;
+		break;
 	case SDLK_SPACE:
 		ResetBall();
 		break;
@@ -153,12 +202,8 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 
 void PongApp::ResetBall()
 {
-	static unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
-	static std::default_random_engine generator(seed);
-	static std::uniform_int_distribution<int> distribution(-m_LeftPaddle.GetHeight() / 2, m_LeftPaddle.GetHeight() / 2);
-
 	double x = m_Window.GetWidth() / 2;
-	double y = m_Window.GetHeight() / 2 + distribution(generator);
+	double y = m_Window.GetHeight() / 2;
 
 	m_Ball.SetVelocity( Vec2D(m_Ball_Speed, 0) );
 	m_Ball.SetPosition( Vec2D(x, y) );
