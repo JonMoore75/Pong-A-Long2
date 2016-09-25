@@ -10,6 +10,7 @@
 
 enum AXIS { XAXIS, YAXIS };
 enum DIRN { LESSTHAN, GRTERTHAN};
+enum BALL_DIRN { LEFT, RIGHT};
 
 class PongApp : public GameApp
 {
@@ -24,21 +25,24 @@ public:
 
 	void AppUpdate(double dt);
 
-	void TestForWallCollisions();
-
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
 
 private:
-	void ResetBall();
+	void ResetBall(BALL_DIRN dirn);
 	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
+	bool CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
+
 	void CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
 	void MovePaddle(double dt, GameObject& paddle);
+
+	void CheckForPointWon();
+
+	void TestForWallCollisions();
 
 	GameObject m_Ball;
 	GameObject m_LeftPaddle;
 	GameObject m_RightPaddle;
-	GameObject m_textInstruct;
 
 	double m_Ball_Speed = 200.;
 	double m_BounceModifier = m_Ball_Speed*1.5;
@@ -46,6 +50,9 @@ private:
 	int m_paddle_min = 50;
 	int m_paddle_max = -m_paddle_min;
 	double m_paddle_speed = 200.0;
+
+	int m_LeftPlayerScore = 0;
+	int m_RightPlayerScore = 0;
 };
 
 #endif // PongApp_h__
