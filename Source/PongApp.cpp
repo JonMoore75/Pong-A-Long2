@@ -22,7 +22,22 @@ bool PongApp::AppInit()
 		return false;
 
 	m_Ball.SetAnchorPt(GameObject::CENTRE);
-	ResetBall();
+	
+
+	int paddle_y = m_Window.GetHeight() / 2;
+	int paddle_x = 20;
+
+	// Left paddle creation 
+	if (!m_LeftPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
+		return false;
+	m_LeftPaddle.SetAnchorPt(GameObject::CENTRE);
+	m_LeftPaddle.SetPosition(Vec2D(paddle_x, paddle_y));
+
+	// Right paddle creation
+	if (!m_RightPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
+		return false;
+	m_RightPaddle.SetAnchorPt(GameObject::CENTRE);
+	m_RightPaddle.SetPosition(Vec2D(m_Window.GetWidth() - paddle_x, paddle_y));
 
 	FontTTF arialFont;
 	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
@@ -30,6 +45,8 @@ bool PongApp::AppInit()
 
 	if (!m_textInstruct.CreateTextureFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont))
 		return false;
+
+	ResetBall();
 
 	return true;
 }
@@ -43,11 +60,16 @@ void PongApp::AppRender(Renderer& renderer)
 {
 	m_textInstruct.Render(renderer);
 	m_Ball.Render(renderer);
+	m_LeftPaddle.Render(renderer);
+	m_RightPaddle.Render(renderer);
 }
 
 void PongApp::AppUpdate(double dt)
 {
 	m_Ball.Update(dt);
+
+	CheckForBallPaddleCollision(LESSTHAN, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2);
+	CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2);
 
 	TestForWallCollisions();
 }
@@ -77,6 +99,38 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	}
 }
 
+void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
+{
+	double& position_x = ball_obj.GetPos().x;
+	double& velocity_x = ball_obj.GetVel().x;
+
+	double paddle_halfheight = paddle_obj.GetHeight() / 2;
+	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
+
+	int g = (dirn == GRTERTHAN) ? 1 : -1;
+
+	double planePos = paddle_obj.GetPos().x - g*paddle_halfwidth;
+
+	double dist = g*(planePos - position_x) - circle_radius;
+
+	if (dist < 0.0 && g*velocity_x > 0.0)
+	{
+		double timeSinceCollision = abs(dist/velocity_x);
+
+		// Find the balls y position relative to paddle centre at time of collision, scaled to half height of paddle
+		double relativeYPosition = (ball_obj.GetPos().y - ball_obj.GetVel().y*timeSinceCollision - paddle_obj.GetPos().y)/paddle_halfheight;
+
+		if (relativeYPosition >= -1 && relativeYPosition <= 1)
+		{
+			velocity_x = -velocity_x;
+			position_x = position_x + g * 2 * dist;
+
+			// Add a y component depending on position relative to paddle centre
+			ball_obj.GetVel().y = relativeYPosition*m_BounceModifier;
+		}
+	}
+}
+
 bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
 	return true;
@@ -99,17 +153,13 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 
 void PongApp::ResetBall()
 {
-	static const double angl_conv = 2. * 3.14159265 / 360;
-	static unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	static unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
 	static std::default_random_engine generator(seed);
-	static std::uniform_int_distribution<int> distribution(0, 360);
+	static std::uniform_int_distribution<int> distribution(-m_LeftPaddle.GetHeight() / 2, m_LeftPaddle.GetHeight() / 2);
 
-	double angle = distribution(generator);
+	double x = m_Window.GetWidth() / 2;
+	double y = m_Window.GetHeight() / 2 + distribution(generator);
 
-	double x = m_Ball_Speed*cos(angle*angl_conv);
-	double y = m_Ball_Speed*sin(angle*angl_conv);
-
-	m_Ball.SetVelocity(Vec2D(x, y));
-	m_Ball.SetPosition(Vec2D(m_Window.GetWidth() / 2,
-		m_Window.GetHeight() / 2));
+	m_Ball.SetVelocity( Vec2D(m_Ball_Speed, 0) );
+	m_Ball.SetPosition( Vec2D(x, y) );
 }
