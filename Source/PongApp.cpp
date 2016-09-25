@@ -38,14 +38,9 @@ bool PongApp::AppInit()
 	m_RightPaddle.SetAnchorPt(GameObject::CENTRE);
 	m_RightPaddle.SetPosition(Vec2D(m_Window.GetWidth() - paddle_x, paddle_y));
 
-	FontTTF arialFont;
-	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
-		return false;
+	UpdateScores();
 
-	if (!m_textInstruct.CreateTextureFromText(renderer, "Press space to reset ball, Press escape to quit", arialFont))
-		return false;
-
-	ResetBall();
+	ResetBall(LEFT);
 
 	return true;
 }
@@ -57,10 +52,15 @@ void PongApp::AppCleanup()
 
 void PongApp::AppRender(Renderer& renderer)
 {
-	m_textInstruct.Render(renderer);
+	static int left_x = 4 * m_Window.GetWidth() / 10;
+	static int right_x = 6 * m_Window.GetWidth() / 10;
+
 	m_Ball.Render(renderer);
 	m_LeftPaddle.Render(renderer);
 	m_RightPaddle.Render(renderer);
+
+	m_LeftScoreText.Render(renderer, left_x  - m_LeftScoreText.GetWidth(), 0);
+	m_RightScoreText.Render(renderer, right_x, 0);
 }
 
 void PongApp::AppUpdate(double dt)
@@ -73,15 +73,45 @@ void PongApp::AppUpdate(double dt)
 	CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2);
 
 	TestForWallCollisions();
+
+	CheckForPointWon();
 }
 
+
+void PongApp::CheckForPointWon()
+{
+	if (CheckForCircleAxisTrigger(XAXIS, LESSTHAN, -m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	{
+		m_RightPlayerScore++;
+		ResetBall(RIGHT);
+
+		UpdateScores();
+	}
+	else if (CheckForCircleAxisTrigger(XAXIS, GRTERTHAN, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	{
+		m_LeftPlayerScore++;
+		ResetBall(LEFT);
+
+		UpdateScores();
+	}
+}
+
+void PongApp::UpdateScores()
+{
+	Renderer& renderer = m_Window.GetRenderer();
+
+	FontTTF arialFont;
+	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 50, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
+		return;
+
+	m_LeftScoreText.CreateFromText(renderer, std::to_string(m_LeftPlayerScore), arialFont);
+	m_RightScoreText.CreateFromText(renderer, std::to_string(m_RightPlayerScore), arialFont);
+}
 
 void PongApp::TestForWallCollisions()
 {
 	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
 	CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleAxisCollision(XAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetWidth() / 2);
-	CheckForCircleAxisCollision(XAXIS, GRTERTHAN, m_Window.GetWidth(), m_Ball, m_Ball.GetWidth() / 2);
 }
 
 void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
@@ -98,6 +128,18 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 		velocity = -velocity;
 		position = position + g * 2 * dist;
 	}
+}
+
+bool PongApp::CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
+{
+	const double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
+	const double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
+
+	int g = (dirn == GRTERTHAN) ? 1 : -1;
+
+	double dist = g*(planePos - position) - circle_radius;
+
+	return (dist < 0.0 && g*velocity > 0.0);
 }
 
 void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
@@ -189,9 +231,6 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 		if (rightVertSpeed > 0.0)
 			rightVertSpeed = 0.0;
 		break;
-	case SDLK_SPACE:
-		ResetBall();
-		break;
 	case SDLK_ESCAPE:
 		m_Running = false;
 		break;
@@ -200,11 +239,13 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 	return true;
 }
 
-void PongApp::ResetBall()
+void PongApp::ResetBall(BALL_DIRN dirn)
 {
 	double x = m_Window.GetWidth() / 2;
 	double y = m_Window.GetHeight() / 2;
 
-	m_Ball.SetVelocity( Vec2D(m_Ball_Speed, 0) );
+	double vx = (dirn == RIGHT) ? m_Ball_Speed : -m_Ball_Speed;
+
+	m_Ball.SetVelocity( Vec2D(vx, 0) );
 	m_Ball.SetPosition( Vec2D(x, y) );
 }
