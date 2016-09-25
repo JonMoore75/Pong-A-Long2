@@ -38,11 +38,16 @@ private:
 
 	void CheckForPointWon();
 
+	void UpdateScores();
+
 	void TestForWallCollisions();
 
 	GameObject m_Ball;
 	GameObject m_LeftPaddle;
 	GameObject m_RightPaddle;
+
+	Texture m_LeftScoreText;
+	Texture m_RightScoreText;
 
 	double m_Ball_Speed = 200.;
 	double m_BounceModifier = m_Ball_Speed*1.5;

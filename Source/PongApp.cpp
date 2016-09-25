@@ -38,9 +38,7 @@ bool PongApp::AppInit()
 	m_RightPaddle.SetAnchorPt(GameObject::CENTRE);
 	m_RightPaddle.SetPosition(Vec2D(m_Window.GetWidth() - paddle_x, paddle_y));
 
-	FontTTF arialFont;
-	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 24, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
-		return false;
+	UpdateScores();
 
 	ResetBall(LEFT);
 
@@ -54,9 +52,15 @@ void PongApp::AppCleanup()
 
 void PongApp::AppRender(Renderer& renderer)
 {
+	static int left_x = 4 * m_Window.GetWidth() / 10;
+	static int right_x = 6 * m_Window.GetWidth() / 10;
+
 	m_Ball.Render(renderer);
 	m_LeftPaddle.Render(renderer);
 	m_RightPaddle.Render(renderer);
+
+	m_LeftScoreText.Render(renderer, left_x  - m_LeftScoreText.GetWidth(), 0);
+	m_RightScoreText.Render(renderer, right_x, 0);
 }
 
 void PongApp::AppUpdate(double dt)
@@ -80,12 +84,28 @@ void PongApp::CheckForPointWon()
 	{
 		m_RightPlayerScore++;
 		ResetBall(RIGHT);
+
+		UpdateScores();
 	}
-	if (CheckForCircleAxisTrigger(XAXIS, GRTERTHAN, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	else if (CheckForCircleAxisTrigger(XAXIS, GRTERTHAN, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
 		m_LeftPlayerScore++;
 		ResetBall(LEFT);
+
+		UpdateScores();
 	}
+}
+
+void PongApp::UpdateScores()
+{
+	Renderer& renderer = m_Window.GetRenderer();
+
+	FontTTF arialFont;
+	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 50, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
+		return;
+
+	m_LeftScoreText.CreateFromText(renderer, std::to_string(m_LeftPlayerScore), arialFont);
+	m_RightScoreText.CreateFromText(renderer, std::to_string(m_RightPlayerScore), arialFont);
 }
 
 void PongApp::TestForWallCollisions()
