@@ -44,7 +44,9 @@ bool Texture::CreateFromFile(Renderer& renderer, std::string filename)
 	if (!pSurface)
 	{
 		// Failed to load from file
-		Error2MsgBox("Could not load texture from file.\n");
+		std::string err_msg = "Could not load texture from file.\n";
+		err_msg += filename + "\n";
+		Error2MsgBox(err_msg);
 		return false;
 	}
 	else
