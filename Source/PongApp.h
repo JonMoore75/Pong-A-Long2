@@ -7,6 +7,7 @@
 #include "Font_TTF.h"
 #include "Vec2D.h"
 #include "GameObject.h"
+#include "SoundEffect.h"
 
 enum AXIS { XAXIS, YAXIS };
 enum DIRN { LESSTHAN, GRTERTHAN};
@@ -30,10 +31,10 @@ public:
 
 private:
 	void ResetBall(BALL_DIRN dirn);
-	void CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
+	bool CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
 	bool CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
 
-	void CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
+	bool CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
 	void MovePaddle(double dt, GameObject& paddle);
 
 	void CheckForPointWon();
@@ -48,6 +49,9 @@ private:
 
 	Texture m_LeftScoreText;
 	Texture m_RightScoreText;
+
+	SoundEffect m_BounceSound;
+	SoundEffect m_ScoreSound;
 
 	double m_Ball_Speed = 200.;
 	double m_BounceModifier = m_Ball_Speed*1.5;

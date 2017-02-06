@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <sstream>
 
 #include "SDLErrorReport.h"
@@ -55,6 +56,15 @@ bool GameApp::Init(WindowCreationParams& createParam)
 		err_msg += TTF_GetError();
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
 		return false;
+	}
+
+	//Initialize SDL_mixer 
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) 
+	{ 
+		std::string err_msg = "SDL_mixer could not initialize!\n";
+		err_msg += Mix_GetError();
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", err_msg.c_str(), nullptr);
+		return false; 
 	}
 
 	// Create a window, report error if window not created
