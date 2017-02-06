@@ -16,6 +16,12 @@ bool PongApp::AppInit()
 
 	m_paddle_max += m_Window.GetHeight();
 
+	if (!m_BounceSound.CreateFromFile("..\\sfx\\Bounce.wav"))
+		return false;
+
+	if (!m_ScoreSound.CreateFromFile("..\\sfx\\Score.wav"))
+		return false;
+
 	// Ball Creation
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
@@ -69,8 +75,9 @@ void PongApp::AppUpdate(double dt)
 	MovePaddle(dt, m_LeftPaddle);
 	MovePaddle(dt, m_RightPaddle);
 
-	CheckForBallPaddleCollision(LESSTHAN, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2);
-	CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2);
+	if (CheckForBallPaddleCollision(LESSTHAN, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2) ||
+		CheckForBallPaddleCollision(GRTERTHAN, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2))
+		m_BounceSound.Play();
 
 	TestForWallCollisions();
 
@@ -86,6 +93,8 @@ void PongApp::CheckForPointWon()
 		ResetBall(RIGHT);
 
 		UpdateScores();
+
+		m_ScoreSound.Play();
 	}
 	else if (CheckForCircleAxisTrigger(XAXIS, GRTERTHAN, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
@@ -93,6 +102,8 @@ void PongApp::CheckForPointWon()
 		ResetBall(LEFT);
 
 		UpdateScores();
+
+		m_ScoreSound.Play();
 	}
 }
 
@@ -110,11 +121,12 @@ void PongApp::UpdateScores()
 
 void PongApp::TestForWallCollisions()
 {
-	CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2);
-	CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2);
+	 if ( CheckForCircleAxisCollision(YAXIS, LESSTHAN, 0, m_Ball, m_Ball.GetHeight() / 2) ||
+		CheckForCircleAxisCollision(YAXIS, GRTERTHAN, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2) )
+		 m_BounceSound.Play();
 }
 
-void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
+bool PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
 {
 	double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
 	double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
@@ -127,7 +139,11 @@ void PongApp::CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, Ga
 	{
 		velocity = -velocity;
 		position = position + g * 2 * dist;
+
+		return true;
 	}
+
+	return false;
 }
 
 bool PongApp::CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius)
@@ -142,7 +158,7 @@ bool PongApp::CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, Game
 	return (dist < 0.0 && g*velocity > 0.0);
 }
 
-void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
+bool PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
 {
 	double& position_x = ball_obj.GetPos().x;
 	double& velocity_x = ball_obj.GetVel().x;
@@ -172,8 +188,11 @@ void PongApp::CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, Gam
 
 			// Add a y component depending on position relative to paddle centre
 			ball_obj.GetVel().y = relativeYPosition*m_BounceModifier;
+
+			return true;
 		}
 	}
+	return false;
 }
 
 void PongApp::MovePaddle(double dt, GameObject& paddle)
