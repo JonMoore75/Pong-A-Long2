@@ -25,6 +25,7 @@ void GameApp::Cleanup()
 	m_Window.Release();
 
 	// Shutdown SDL
+	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
