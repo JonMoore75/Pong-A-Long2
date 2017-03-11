@@ -10,12 +10,12 @@ SoundEffect::SoundEffect()
 SoundEffect::~SoundEffect()
 {
 	Release();
-	m_Sound = nullptr;
 }
 
 void SoundEffect::Release()
 {
 	Mix_FreeChunk(m_Sound);
+	m_Sound = nullptr;
 }
 
 bool SoundEffect::CreateFromFile(std::string filename)
