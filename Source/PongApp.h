@@ -10,7 +10,7 @@
 #include "SoundEffect.h"
 
 enum AXIS { XAXIS, YAXIS };
-enum DIRN { LESSTHAN, GRTERTHAN};
+//enum DIRN { LESSTHAN, GRTERTHAN};
 enum BALL_DIRN { LEFT, RIGHT};
 
 class PongApp : public GameApp
@@ -31,10 +31,11 @@ public:
 
 private:
 	void ResetBall(BALL_DIRN dirn);
-	bool CheckForCircleAxisCollision(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
-	bool CheckForCircleAxisTrigger(AXIS axis, DIRN dirn, int planePos, GameObject& circle_obj, double circle_radius);
+	bool CheckForCircleAxisCollision(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius);
+	bool CheckForCircleAxisTrigger(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius);
 
-	bool CheckForBallPaddleCollision(DIRN dirn, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
+	bool CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
+	double CheckCornerCollision(Vec2D& corner_pos, Vec2D& ball_pos, Vec2D& relVelocity, double ball_radius);
 	void MovePaddle(double dt, GameObject& paddle);
 
 	void CheckForPointWon();
@@ -53,8 +54,8 @@ private:
 	SoundEffect m_BounceSound;
 	SoundEffect m_ScoreSound;
 
-	double m_Ball_Speed = 200.;
-	double m_BounceModifier = m_Ball_Speed*1.5;
+	double m_Ball_XSpeed = 200.;
+	double m_BounceModifier = m_Ball_XSpeed*1.5;
 
 	int m_paddle_min = 50;
 	int m_paddle_max = -m_paddle_min;
