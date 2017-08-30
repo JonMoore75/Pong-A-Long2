@@ -13,3 +13,4 @@ double GetIntersectionDist(AXIS axis, int Norm, double planePos, GameObject& cir
 
 double CheckCornerCircleCollision(Vec2D& corner_pos, Vec2D& circle_pos, Vec2D& relVelocity, double circle_radius);
 
+#endif Collision_h__
