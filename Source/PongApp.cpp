@@ -1,4 +1,5 @@
 #include "PongApp.h"
+#include "Collision.h"
 
 PongApp::PongApp(std::string appname) : GameApp(appname)
 {
@@ -14,39 +15,65 @@ bool PongApp::AppInit()
 {
 	Renderer& renderer = m_Window.GetRenderer();
 
-	m_paddle_max += m_Window.GetHeight();
+	if (!CreateSounds())
+		return false;
 
+	if (!CreateBall(renderer))
+		return false;
+
+	m_paddle_max = m_Window.GetHeight() - m_paddle_min;
+	int paddle_y = m_Window.GetHeight() / 2;
+
+	if (!CreatePaddle(m_LeftPaddle, renderer, 20, paddle_y))
+		return false;
+
+	if (!CreatePaddle(m_RightPaddle, renderer, m_Window.GetWidth() - 20, paddle_y))
+		return false;
+
+	UpdateScores();
+
+	return true;
+}
+
+bool PongApp::CreateBall(Renderer& renderer)
+{
+	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
+		return false;
+	m_Ball.SetAnchorPt(GameObject::CENTRE);
+	ResetBall(LEFT);
+
+	return true;
+}
+
+void PongApp::ResetBall(BALL_DIRN dirn)
+{
+	double x = m_Window.GetWidth() / 2;
+	double y = m_Window.GetHeight() / 2;
+
+	double vx = (dirn == RIGHT) ? m_Ball_XSpeed : -m_Ball_XSpeed;
+
+	m_Ball.SetVelocity(Vec2D(vx, 0));
+	m_Ball.SetPosition(Vec2D(x, y));
+}
+
+bool PongApp::CreateSounds()
+{
 	if (!m_BounceSound.CreateFromFile("..\\sfx\\Bounce.wav"))
 		return false;
 
 	if (!m_ScoreSound.CreateFromFile("..\\sfx\\Score.wav"))
 		return false;
 
-	// Ball Creation
-	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
-		return false;
+	return true;
+}
 
-	m_Ball.SetAnchorPt(GameObject::CENTRE);
-	
-
-	int paddle_y = m_Window.GetHeight() / 2;
-	int paddle_x = 20;
-
+bool PongApp::CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x, int paddle_y)
+{
 	// Left paddle creation 
-	if (!m_LeftPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
+	if (!paddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
 		return false;
-	m_LeftPaddle.SetAnchorPt(GameObject::CENTRE);
-	m_LeftPaddle.SetPosition(Vec2D(paddle_x, paddle_y));
-
-	// Right paddle creation
-	if (!m_RightPaddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
-		return false;
-	m_RightPaddle.SetAnchorPt(GameObject::CENTRE);
-	m_RightPaddle.SetPosition(Vec2D(m_Window.GetWidth() - paddle_x, paddle_y));
-
-	UpdateScores();
-
-	ResetBall(LEFT);
+	paddle.SetAnchorPt(GameObject::CENTRE);
+	paddle.SetPosition(Vec2D(paddle_x, paddle_y));
 
 	return true;
 }
@@ -72,9 +99,14 @@ void PongApp::AppRender(Renderer& renderer)
 
 void PongApp::AppUpdate(double dt)
 {
+	// Move game objects
 	m_Ball.Update(dt);
-	MovePaddle(dt, m_LeftPaddle);
-	MovePaddle(dt, m_RightPaddle);
+	m_LeftPaddle.Update(dt);
+	m_RightPaddle.Update(dt);
+
+	// Clamp paddles to stay onscreen
+	PaddleClamp(dt, m_LeftPaddle);
+	PaddleClamp(dt, m_RightPaddle);
 
 	if (CheckForBallPaddleCollision(1, m_LeftPaddle, m_Ball, m_Ball.GetWidth() / 2) ||
 		CheckForBallPaddleCollision(-1, m_RightPaddle, m_Ball, m_Ball.GetWidth() / 2))
@@ -88,7 +120,7 @@ void PongApp::AppUpdate(double dt)
 
 void PongApp::CheckForPointWon()
 {
-	if (CheckForCircleAxisTrigger(XAXIS, 1, -m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	if (CheckForCircleAxisIntersection(XAXIS, 1, -m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
 		m_RightPlayerScore++;
 		ResetBall(RIGHT);
@@ -97,7 +129,7 @@ void PongApp::CheckForPointWon()
 
 		m_ScoreSound.Play();
 	}
-	else if (CheckForCircleAxisTrigger(XAXIS, -1, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	else if (CheckForCircleAxisIntersection(XAXIS, -1, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
 		m_LeftPlayerScore++;
 		ResetBall(LEFT);
@@ -122,40 +154,58 @@ void PongApp::UpdateScores()
 
 void PongApp::TestForWallCollisions()
 {
-	 if ( CheckForCircleAxisCollision(YAXIS, 1, 0, m_Ball, m_Ball.GetHeight() / 2) ||
-		CheckForCircleAxisCollision(YAXIS, -1, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2) )
-		 m_BounceSound.Play();
+	if (CheckForCircleAxisCollision(YAXIS, 1, 0, m_Ball, m_Ball.GetHeight() / 2) ||
+		CheckForCircleAxisCollision(YAXIS, -1, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2))
+		m_BounceSound.Play();
 }
 
-bool PongApp::CheckForCircleAxisCollision(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius)
+bool PongApp::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
 {
-	double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
-	double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
+	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
 
-	double dist = Norm*(position - planePos) - circle_radius;
+	double planePos = paddle_obj.GetPos().x + Norm*paddle_halfwidth;
 
-	if (dist < 0.0 && Norm*velocity < 0.0)
+	// If ball passes through the plane in line with the paddle
+	if (CheckForCircleAxisIntersection(XAXIS, Norm, planePos, ball_obj, circle_radius))
 	{
-		velocity = -velocity;
-		position = position - 2 * Norm * dist;
+		if ( PaddleFaceCollide(paddle_obj, ball_obj, Norm, planePos, circle_radius) )
+			return true;
 
-		return true;
+		// Check for corner collisions
+		// Bottom corner
+		if ( PaddleCornerCollide(ball_obj, paddle_obj, Norm, 1, circle_radius) )
+			return true;
+
+		// Top corner
+		if ( PaddleCornerCollide(ball_obj, paddle_obj, Norm, -1, circle_radius) )
+			return true;
+
 	}
+	return false;
+}
+
+
+
+bool PongApp::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, int Norm, double planePos, double circle_radius)
+{
+	double paddle_halfheight = paddle_obj.GetHeight() / 2;
+	double& velocity_x = ball_obj.GetVel().x;
+
+	double dist = GetIntersectionDist(XAXIS, Norm, planePos, ball_obj, circle_radius);
+	double timeSinceCollision = abs(dist / velocity_x);
+
+	// Find the balls y position relative to paddle centre at time of collision, scaled to half height of paddle
+	double relativeYVelocity = ball_obj.GetVel().y - paddle_obj.GetVel().y;
+	double relativeYPosition = (ball_obj.GetPos().y - relativeYVelocity*timeSinceCollision - paddle_obj.GetPos().y) / paddle_halfheight;
+
+	// Bounce if hit paddle face
+	if (relativeYPosition >= -1 && relativeYPosition <= 1)
+		return BallBounceOffPaddle(Norm, dist, ball_obj, relativeYPosition);
 
 	return false;
 }
 
-bool PongApp::CheckForCircleAxisTrigger(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius)
-{
-	const double& position = (axis == XAXIS) ? circle_obj.GetPos().x : circle_obj.GetPos().y;
-	const double& velocity = (axis == XAXIS) ? circle_obj.GetVel().x : circle_obj.GetVel().y;
-
-	double dist = Norm*(position - planePos) - circle_radius;
-
-	return (dist < 0.0 && Norm*velocity < 0.0);
-}
-
-bool PongApp::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
+bool PongApp::PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, int Norm, int dirn, double circle_radius)
 {
 	double& position_x = ball_obj.GetPos().x;
 	double& velocity_x = ball_obj.GetVel().x;
@@ -163,83 +213,31 @@ bool PongApp::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, Game
 	double paddle_halfheight = paddle_obj.GetHeight() / 2;
 	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
 
-	double planePos = paddle_obj.GetPos().x + Norm*paddle_halfwidth;
+	Vec2D corner_offset(paddle_halfwidth*Norm, dirn*paddle_halfheight);
+	double timeSinceCollision = CheckCornerCircleCollision(paddle_obj.GetPos() + corner_offset, ball_obj.GetPos(), ball_obj.GetVel() - paddle_obj.GetVel(), circle_radius);
 
-	double dist = Norm*(position_x - planePos) - circle_radius;
+	if (timeSinceCollision >= 0.0)
+		return BallBounceOffPaddle(Norm, timeSinceCollision*velocity_x, ball_obj, dirn);
 
-	// If ball passes through the plane in line with the paddle
-	if (dist < 0.0 && Norm*velocity_x < 0.0)
-	{
-		double timeSinceCollision = abs(dist/velocity_x);
-
-		double relativeYVelocity = ball_obj.GetVel().y - paddle_obj.GetVel().y;
-
-		// Find the balls y position relative to paddle centre at time of collision, scaled to half height of paddle
-		double relativeYPosition = (ball_obj.GetPos().y - relativeYVelocity*timeSinceCollision - paddle_obj.GetPos().y)/paddle_halfheight;
-
-		if (relativeYPosition >= -1 && relativeYPosition <= 1)
-		{
-			velocity_x = -velocity_x;
-			position_x = position_x - 2 * Norm * dist;
-
-			// Add a y component depending on position relative to paddle centre
-			ball_obj.GetVel().y = relativeYPosition*m_BounceModifier;
-
-			return true;
-		}
-		// if traj relative to paddle has passed through corner circle
-
-		Vec2D corner_offset(paddle_halfwidth*Norm, paddle_halfheight);
-		timeSinceCollision = CheckCornerCollision(paddle_obj.GetPos()+corner_offset, ball_obj.GetPos(), ball_obj.GetVel() - paddle_obj.GetVel(), circle_radius);
-
-		if (timeSinceCollision >= 0.0)
-		{
-			velocity_x = -velocity_x;
-			position_x = position_x - 2 * Norm * timeSinceCollision*velocity_x;
-
-			// Add a y component depending on position relative to paddle centre
-			ball_obj.GetVel().y = m_BounceModifier;
-		}
-
-		corner_offset = Vec2D(paddle_halfwidth*Norm, -paddle_halfheight);
-		timeSinceCollision = CheckCornerCollision(paddle_obj.GetPos() + corner_offset, ball_obj.GetPos(), ball_obj.GetVel() - paddle_obj.GetVel(), circle_radius);
-
-		if (timeSinceCollision >= 0.0)
-		{
-			velocity_x = -velocity_x;
-			position_x = position_x - 2 * Norm * timeSinceCollision*velocity_x;
-
-			// Add a y component depending on position relative to paddle centre
-			ball_obj.GetVel().y = -m_BounceModifier;
-		}
-
-	}
 	return false;
 }
 
-double PongApp::CheckCornerCollision(Vec2D& corner_pos, Vec2D& ball_pos, Vec2D& relVelocity, double ball_radius)
+bool PongApp::BallBounceOffPaddle(int Norm, double dist, GameObject &ball_obj, double relativeYPosition)
 {
-	Vec2D relPos = ball_pos - corner_pos;
-	Vec2D relVel = -relVelocity;
+	double& position_x = ball_obj.GetPos().x;
+	double& velocity_x = ball_obj.GetVel().x;
 
-	double A = relVel.dot(relVel);
-	double B = 2*relPos.dot(relVel);
-	double C = relPos.dot(relPos) - ball_radius*ball_radius;
+	velocity_x = -velocity_x;
+	position_x = position_x - 2 * Norm * dist;
 
-	double discrim = B*B - 4*A*C;
+	// Add a y component depending on position relative to paddle centre
+	ball_obj.GetVel().y = relativeYPosition*m_BounceModifier;
 
-	// If ball hits corner
-	if (discrim >= 0)
-		// Take largest root ie biggest time since collision equals earliest collision
-		// and return that time since collision
-		return (-B + sqrt(discrim)) / (2 * A);
-	return -1;
+	return true;
 }
 
-void PongApp::MovePaddle(double dt, GameObject& paddle)
+void PongApp::PaddleClamp(double dt, GameObject& paddle)
 {
-	paddle.Update(dt);
-
 	double& y = paddle.GetPos().y;
 
 	if (y < m_paddle_min)
@@ -299,13 +297,4 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 	return true;
 }
 
-void PongApp::ResetBall(BALL_DIRN dirn)
-{
-	double x = m_Window.GetWidth() / 2;
-	double y = m_Window.GetHeight() / 2;
 
-	double vx = (dirn == RIGHT) ? m_Ball_XSpeed : -m_Ball_XSpeed;
-
-	m_Ball.SetVelocity( Vec2D(vx, 0) );
-	m_Ball.SetPosition( Vec2D(x, y) );
-}

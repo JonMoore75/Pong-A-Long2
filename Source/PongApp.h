@@ -9,7 +9,7 @@
 #include "GameObject.h"
 #include "SoundEffect.h"
 
-enum AXIS { XAXIS, YAXIS };
+
 //enum DIRN { LESSTHAN, GRTERTHAN};
 enum BALL_DIRN { LEFT, RIGHT};
 
@@ -20,6 +20,13 @@ public:
 	virtual ~PongApp();
 
 	bool AppInit();
+
+	bool CreateBall(Renderer& renderer);
+
+	bool CreateSounds();
+
+	bool CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x, int paddle_y);
+
 	void AppCleanup();
 
 	void AppRender(Renderer& renderer);
@@ -31,12 +38,16 @@ public:
 
 private:
 	void ResetBall(BALL_DIRN dirn);
-	bool CheckForCircleAxisCollision(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius);
-	bool CheckForCircleAxisTrigger(AXIS axis, int Norm, int planePos, GameObject& circle_obj, double circle_radius);
 
 	bool CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius);
-	double CheckCornerCollision(Vec2D& corner_pos, Vec2D& ball_pos, Vec2D& relVelocity, double ball_radius);
-	void MovePaddle(double dt, GameObject& paddle);
+
+	bool PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, int Norm, double planePos, double circle_radius);
+
+	bool PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, int Norm, int dirn, double circle_radius);
+
+	bool BallBounceOffPaddle(int Norm, double dist, GameObject &ball_obj, double relativeYPosition);
+
+	void PaddleClamp(double dt, GameObject& paddle);
 
 	void CheckForPointWon();
 
@@ -58,7 +69,7 @@ private:
 	double m_BounceModifier = m_Ball_XSpeed*1.5;
 
 	int m_paddle_min = 50;
-	int m_paddle_max = -m_paddle_min;
+	int m_paddle_max = -m_paddle_min; // Redefined in AppInit
 	double m_paddle_speed = 200.0;
 
 	int m_LeftPlayerScore = 0;
