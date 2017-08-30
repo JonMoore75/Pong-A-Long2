@@ -1,3 +1,5 @@
+#ifndef Collision_h__
+#define Collision_h__
 #pragma once
 
 enum AXIS { XAXIS, YAXIS };
