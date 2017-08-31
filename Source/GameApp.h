@@ -2,8 +2,8 @@
 #define GameApp_h__
 #pragma once
 
+#include <memory>
 #include "Window.h"
-#include "EventHandler.h"
 #include "TimeKeeper.h"
 
 struct WindowCreationParams
@@ -24,38 +24,43 @@ struct WindowCreationParams
 	bool bSoftwareRender = false;	//< Whether use software rendering instead of GPU
 	bool bVSync = false;			//< Whether to wait for Vsync or present immediately to the user.
 	bool bTextureRender = false;	//< Renderer can render to a texture as well as screen
+
+	Uint32 SetRendererCreateFlags();
+
+	Uint32 SetWindowCreateFlags();
 };
 
-class GameApp : public EventHandler
+class GameState;
+
+class GameApp 
 {
 public:
 	GameApp(std::string appname);
 	virtual ~GameApp();
 
-	int Execute(WindowCreationParams& createParam);
+	int Execute(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state);
+
+	Window& GetWindow() { return m_Window; }
+	bool IsRunning() { return m_Running; }
+	void AppQuit() { m_Running = false; }
+
+	template <class State>
+	bool ChangeState();
+
+	bool ChangeState(std::unique_ptr<GameState> new_state);
+
 
 protected:
 
 	void Cleanup();
 
-	bool Init(WindowCreationParams& createParam);
-
-	Uint32 SetRendererCreateFlags(WindowCreationParams &createParam);
-
-	Uint32 SetWindowCreateFlags(WindowCreationParams &createParam);
+	bool Init(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state);
 
 	void HandleEvents();
-
-	virtual void AppCleanup() {}
-	virtual bool AppInit() { return true; }
-	virtual void AppRender(Renderer& renderer) = 0;
-	virtual void AppUpdate(double dt) = 0;
 
 	void MainLoop();
 
 	void Render();
-
-	bool OnExit() { m_Running = false; return true; }
 
 	void DrawFramesPerSecond();
 
@@ -68,6 +73,14 @@ protected:
 	Window	m_Window;
 
 	TimeKeeper m_Timer;
+
+	std::unique_ptr<GameState>		m_pState;
 };
+
+template <class State>
+bool GameApp::ChangeState()
+{
+	return ChangeState(std::make_unique<State>());
+}
 
 #endif // GameApp_h__

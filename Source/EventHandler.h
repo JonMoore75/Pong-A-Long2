@@ -38,7 +38,7 @@ public:
 
 	virtual bool OnKeyBlur(int windowID)									{ return false; }
 
-	virtual bool OnClose(int windowID)										{ return false; }
+//	virtual bool OnClose(int windowID)										{ return false; }
 
 	// Key Events
 	virtual bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key)				{ return false; }
@@ -77,7 +77,7 @@ public:
 
 	// System events
 
-	virtual bool OnExit()														{ return false; }
+//	virtual bool OnExit()														{ return false; }
 
 	// User events
 
