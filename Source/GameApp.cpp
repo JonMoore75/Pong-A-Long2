@@ -185,11 +185,11 @@ void GameApp::MainLoop()
 			// Gets time since last frame
 			double deltaTime = m_Timer.GetDeltaTime();
 
-			std::unique_ptr<GameState>& new_state = m_pState->GetNewState();
+			std::string new_state = m_pState->ExtractNextState();
 
-			if (new_state)
+			if (!new_state.empty())
 			{
-				ChangeState(std::move(new_state));
+				ChangeState( Create(new_state) );
 				m_pState->Initialise();
 			}
 

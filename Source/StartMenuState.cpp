@@ -3,7 +3,6 @@
 #include <memory>
 #include "Window.h"
 #include "Font_TTF.h"
-#include "PongState.h"
 
 bool StartMenuState::Initialise()
 {
@@ -40,29 +39,7 @@ void StartMenuState::Update(double dt)
 
 GameState::QUITRESPONSE StartMenuState::QuitDialog()
 {
-	int buttonid = -1;
-
-	const SDL_MessageBoxButtonData buttons[] = {
-		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "No" },
-	};
-
-	const SDL_MessageBoxData messageboxdata = {
-		SDL_MESSAGEBOX_INFORMATION, /* .flags */
-		NULL,						/* .window */
-		"Quit",						/* .title */
-		"Would you like to Quit?",	/* .message */
-		SDL_arraysize(buttons),		/* .numbuttons */
-		buttons,					/* .buttons */
-		NULL						/* .colorScheme */
-	};
-
-	int ret = SDL_ShowMessageBox(&messageboxdata, &buttonid);
-
-	if (buttonid == 1)
-		return GameState::QUIT;
-
-	return GameState::CANCEL;
+	return TwoOptionQuitDialog();
 }
 
 bool StartMenuState::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
@@ -70,7 +47,7 @@ bool StartMenuState::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 	switch (key)
 	{
 	case SDLK_1:
-		m_newState = std::make_unique<PongState>();
+		m_newState = "PONGSTATE";
 		break;
 	case SDLK_2:
 		RequestAppQuit();

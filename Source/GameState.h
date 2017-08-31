@@ -3,7 +3,8 @@
 #pragma once
 
 #include <memory>
-#include <SDL_assert.h>
+#include <string>
+
 #include "EventHandler.h"
 
 class Renderer;
@@ -23,16 +24,19 @@ public:
 	virtual void CleanUp() = 0;
 	virtual QUITRESPONSE QuitDialog() { return QUIT; }
 
+	QUITRESPONSE ThreeOptionQuitDialog(std::string new_state);
+	QUITRESPONSE TwoOptionQuitDialog();
+
 	void SetWindow(Window* pWnd) { m_pWnd = pWnd; }
 
-	std::unique_ptr<GameState>& GetNewState() { return m_newState; }
+	std::string ExtractNextState();
 
 protected:
 	void RequestAppQuit();
 
 	Window* m_pWnd = nullptr;
 
-	std::unique_ptr<GameState> m_newState;
+	std::string m_newState;
 };
 
 #endif GameState_h__

@@ -3,6 +3,8 @@
 #pragma once
 
 #include <memory>
+#include <map>
+
 #include "Window.h"
 #include "TimeKeeper.h"
 
@@ -32,7 +34,46 @@ struct WindowCreationParams
 
 class GameState;
 
-class GameApp 
+
+template<typename ClassType> 
+std::unique_ptr<GameState> CreateObject()
+{                                                                                                        
+	return std::make_unique<ClassType>();
+}
+
+
+class StateFactory
+{
+public:
+	typedef std::unique_ptr<GameState>(*CreateObjectFunc)();
+	typedef std::map<std::string, CreateObjectFunc>::const_iterator ConstIterator;
+	typedef std::map<std::string, CreateObjectFunc>::iterator Iterator;
+
+	template<typename ClassType>                                                                          
+	bool Register(std::string unique_id)
+	{                                                                                                     
+		if (m_object_creator.find(unique_id) != m_object_creator.end())                                   
+			return false;                                                                                   
+			
+			m_object_creator[unique_id] = &CreateObject<ClassType>; 
+			
+			return true;                                                                                       
+	}
+
+
+	std::unique_ptr<GameState> Create(std::string unique_id)
+	{                                                                                                    
+		Iterator iter = m_object_creator.find(unique_id);                                                  
+		
+		SDL_assert(iter != m_object_creator.end());                                                                                  
+			
+		return ((*iter).second)();                                 
+	}
+private:
+	std::map<std::string, CreateObjectFunc> m_object_creator;
+};
+
+class GameApp : public StateFactory
 {
 public:
 	GameApp(std::string appname);
@@ -44,11 +85,7 @@ public:
 	bool IsRunning() { return m_Running; }
 	void AppQuit() { m_Running = false; }
 
-	template <class State>
-	bool ChangeState();
-
 	bool ChangeState(std::unique_ptr<GameState> new_state);
-
 
 protected:
 
@@ -77,10 +114,6 @@ protected:
 	std::unique_ptr<GameState>		m_pState;
 };
 
-template <class State>
-bool GameApp::ChangeState()
-{
-	return ChangeState(std::make_unique<State>());
-}
+
 
 #endif // GameApp_h__

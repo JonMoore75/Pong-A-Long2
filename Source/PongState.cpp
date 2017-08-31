@@ -2,7 +2,6 @@
 
 #include "Collision.h"
 #include "Font_TTF.h"
-#include "StartMenuState.h"
 
 PongState::PongState() : GameState()
 {
@@ -16,7 +15,6 @@ PongState::~PongState()
 
 bool PongState::Initialise()
 {
-	//Window& window = GetApp()->GetWindow();
 	SDL_assert(m_pWnd);
 	Renderer& renderer = m_pWnd->GetRenderer();
 
@@ -125,37 +123,7 @@ void PongState::Update(double dt)
 
 GameState::QUITRESPONSE PongState::QuitDialog()
 {
-	int buttonid = -1;
- 
-	const SDL_MessageBoxButtonData buttons[] = {
-		{ 0, 0, "Cancel" },
-		{ 0, 1, "Menu" },
-		{ 0, 2, "Quit" },
-	};
-
-	const SDL_MessageBoxData messageboxdata = {
-		SDL_MESSAGEBOX_INFORMATION, /* .flags */
-		NULL,						/* .window */
-		"Quit",						/* .title */
-		"Would you like to Return to Menu or Quit to Desktop?",	/* .message */
-		SDL_arraysize(buttons),		/* .numbuttons */
-		buttons,					/* .buttons */
-		NULL						/* .colorScheme */
-	};
-
-	int ret = SDL_ShowMessageBox(&messageboxdata, &buttonid);
-
-	if (buttonid == 1)
-	{
-		// Return to main menu
-		m_newState = std::make_unique<StartMenuState>();
-		return GameState::NEWSTATE;
-	}
-
-	if (buttonid == 2)
-		return GameState::QUIT;
-
-	return GameState::CANCEL;
+	return ThreeOptionQuitDialog("MENUSTATE");
 }
 
 void PongState::CheckForPointWon()
