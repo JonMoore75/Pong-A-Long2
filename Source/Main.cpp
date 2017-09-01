@@ -12,5 +12,5 @@ int main(int argc, char *argv[])
 	app.Register<StartMenuState>("MENUSTATE");
 	app.Register<PongState>("PONGSTATE");
 
-	return app.Execute(createParam, std::make_unique<StartMenuState>());
+	return app.Execute(createParam, "MENUSTATE");
 }

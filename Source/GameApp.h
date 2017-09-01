@@ -79,7 +79,7 @@ public:
 	GameApp(std::string appname);
 	virtual ~GameApp();
 
-	int Execute(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state);
+	int Execute(WindowCreationParams& createParam, std::string initial_state);
 
 	Window& GetWindow() { return m_Window; }
 	bool IsRunning() { return m_Running; }
@@ -91,7 +91,7 @@ protected:
 
 	void Cleanup();
 
-	bool Init(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state);
+	bool Init(WindowCreationParams& createParam, std::string initial_state);
 
 	void HandleEvents();
 

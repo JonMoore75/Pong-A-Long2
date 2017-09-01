@@ -73,7 +73,7 @@ bool GameApp::ChangeState(std::unique_ptr<GameState> new_state)
 	return (m_pState.get() != nullptr);
 }
 
-bool GameApp::Init(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state)
+bool GameApp::Init(WindowCreationParams& createParam, std::string initial_state)
 {
 	// Initialise SDL, report error if it fails
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -130,7 +130,7 @@ bool GameApp::Init(WindowCreationParams& createParam, std::unique_ptr<GameState>
 
 	m_Timer.Initialize();
 
-	ChangeState(std::move(initial_state));
+	ChangeState( Create(initial_state) );
 	SDL_assert(m_pState);
 
 	return m_pState->Initialise();
@@ -216,10 +216,10 @@ void GameApp::Render()
 	}
 }
 
-int GameApp::Execute(WindowCreationParams& createParam, std::unique_ptr<GameState> initial_state)
+int GameApp::Execute(WindowCreationParams& createParam, std::string initial_state)
 {
 	// Initialise SDL and create window
-	if (!Init(createParam, std::move(initial_state)))
+	if ( !Init(createParam, initial_state) )
 		return -1;
 
 	MainLoop();
