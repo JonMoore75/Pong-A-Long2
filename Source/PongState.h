@@ -1,11 +1,11 @@
-#ifndef PongApp_h__
-#define PongApp_h__
+#ifndef PongState_h__
+#define PongState_h__
 #pragma once
 
 #include "GameApp.h"
 #include "Texture.h"
-#include "Font_TTF.h"
 #include "Vec2D.h"
+#include "GameState.h"
 #include "GameObject.h"
 #include "SoundEffect.h"
 
@@ -13,25 +13,22 @@
 //enum DIRN { LESSTHAN, GRTERTHAN};
 enum BALL_DIRN { LEFT, RIGHT};
 
-class PongApp : public GameApp
+class PongState : public GameState
 {
 public:
-	PongApp(std::string appname);
-	virtual ~PongApp();
+	PongState();
+	virtual ~PongState();
 
-	bool AppInit();
+	bool Initialise();
+	void CleanUp();
+	void Render(Renderer& renderer);
+	void Update(double dt);
+	GameState::QUITRESPONSE QuitDialog();
 
 	bool CreateBall(Renderer& renderer);
-
 	bool CreateSounds();
-
 	bool CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x, int paddle_y);
 
-	void AppCleanup();
-
-	void AppRender(Renderer& renderer);
-
-	void AppUpdate(double dt);
 
 	bool OnKeyDown(SDL_Scancode scan, SDL_Keycode key);
 	bool OnKeyUp(SDL_Scancode scan, SDL_Keycode key);
@@ -76,5 +73,5 @@ private:
 	int m_RightPlayerScore = 0;
 };
 
-#endif // PongApp_h__
+#endif // PongState_h__
 

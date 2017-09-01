@@ -2,9 +2,10 @@
 #define GameApp_h__
 #pragma once
 
-#include "Window.h"
-#include "EventHandler.h"
+#include <memory>
+#include <map>
 
+#include "Window.h"
 #include "TimeKeeper.h"
 
 struct WindowCreationParams
@@ -25,39 +26,78 @@ struct WindowCreationParams
 	bool bSoftwareRender = false;	//< Whether use software rendering instead of GPU
 	bool bVSync = false;			//< Whether to wait for Vsync or present immediately to the user.
 	bool bTextureRender = false;	//< Renderer can render to a texture as well as screen
+
+	Uint32 SetRendererCreateFlags();
+
+	Uint32 SetWindowCreateFlags();
 };
 
-class GameApp : public EventHandler
+class GameState;
+
+
+template<typename ClassType> 
+std::unique_ptr<GameState> CreateObject()
+{                                                                                                        
+	return std::make_unique<ClassType>();
+}
+
+
+class StateFactory
+{
+public:
+	typedef std::unique_ptr<GameState>(*CreateObjectFunc)();
+	typedef std::map<std::string, CreateObjectFunc>::const_iterator ConstIterator;
+	typedef std::map<std::string, CreateObjectFunc>::iterator Iterator;
+
+	template<typename ClassType>                                                                          
+	bool Register(std::string unique_id)
+	{                                                                                                     
+		if (m_object_creator.find(unique_id) != m_object_creator.end())                                   
+			return false;                                                                                   
+			
+			m_object_creator[unique_id] = &CreateObject<ClassType>; 
+			
+			return true;                                                                                       
+	}
+
+
+	std::unique_ptr<GameState> Create(std::string unique_id)
+	{                                                                                                    
+		Iterator iter = m_object_creator.find(unique_id);                                                  
+		
+		SDL_assert(iter != m_object_creator.end());                                                                                  
+			
+		return ((*iter).second)();                                 
+	}
+private:
+	std::map<std::string, CreateObjectFunc> m_object_creator;
+};
+
+class GameApp : public StateFactory
 {
 public:
 	GameApp(std::string appname);
-
 	virtual ~GameApp();
 
-	int Execute(WindowCreationParams& createParam);
+	int Execute(WindowCreationParams& createParam, std::string initial_state);
+
+	Window& GetWindow() { return m_Window; }
+	bool IsRunning() { return m_Running; }
+	void AppQuit() { m_Running = false; }
+
+	bool ChangeState(std::unique_ptr<GameState> new_state);
 
 protected:
 
 	void Cleanup();
 
-	bool Init(WindowCreationParams& createParam);
-
-	Uint32 SetRendererCreateFlags(WindowCreationParams &createParam);
-
-	Uint32 SetWindowCreateFlags(WindowCreationParams &createParam);
+	bool Init(WindowCreationParams& createParam, std::string initial_state);
 
 	void HandleEvents();
-
-	virtual void AppCleanup() {}
-	virtual bool AppInit() { return true; }
-	virtual void AppRender(Renderer& renderer) = 0;
-	virtual void AppUpdate(double dt) = 0;
 
 	void MainLoop();
 
 	void Render();
-
-	bool OnExit() { m_Running = false; return true; }
 
 	void DrawFramesPerSecond();
 
@@ -70,6 +110,10 @@ protected:
 	Window	m_Window;
 
 	TimeKeeper m_Timer;
+
+	std::unique_ptr<GameState>		m_pState;
 };
+
+
 
 #endif // GameApp_h__

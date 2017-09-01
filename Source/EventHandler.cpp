@@ -62,7 +62,7 @@ bool EventHandler::OnEvent(SDL_Event& Event)
 				eventHandled = OnKeyBlur(windowID);
 				break;
 			case SDL_WINDOWEVENT_CLOSE:
-				eventHandled = OnClose(windowID);
+//				eventHandled = OnClose(windowID);
 				break;
 			}
 		}
@@ -146,8 +146,8 @@ bool EventHandler::OnEvent(SDL_Event& Event)
 		break;
 	
 
-	case SDL_QUIT: 
-		eventHandled = OnExit();
+	case SDL_QUIT:
+//		eventHandled = OnExit();
 		break;
 	
 
