@@ -1,19 +1,22 @@
-#include "PongApp.h"
+#include "PongState.h"
+
 #include "Collision.h"
+#include "Font_TTF.h"
 
-PongApp::PongApp(std::string appname) : GameApp(appname)
+PongState::PongState() : GameState()
 {
 
 }
 
-PongApp::~PongApp()
+PongState::~PongState()
 {
-
+	CleanUp();
 }
 
-bool PongApp::AppInit()
+bool PongState::Initialise()
 {
-	Renderer& renderer = m_Window.GetRenderer();
+	SDL_assert(m_pWnd);
+	Renderer& renderer = m_pWnd->GetRenderer();
 
 	if (!CreateSounds())
 		return false;
@@ -21,13 +24,13 @@ bool PongApp::AppInit()
 	if (!CreateBall(renderer))
 		return false;
 
-	m_paddle_max = m_Window.GetHeight() - m_paddle_min;
-	int paddle_y = m_Window.GetHeight() / 2;
+	m_paddle_max = m_pWnd->GetHeight() - m_paddle_min;
+	int paddle_y = m_pWnd->GetHeight() / 2;
 
 	if (!CreatePaddle(m_LeftPaddle, renderer, 20, paddle_y))
 		return false;
 
-	if (!CreatePaddle(m_RightPaddle, renderer, m_Window.GetWidth() - 20, paddle_y))
+	if (!CreatePaddle(m_RightPaddle, renderer, m_pWnd->GetWidth() - 20, paddle_y))
 		return false;
 
 	UpdateScores();
@@ -35,7 +38,7 @@ bool PongApp::AppInit()
 	return true;
 }
 
-bool PongApp::CreateBall(Renderer& renderer)
+bool PongState::CreateBall(Renderer& renderer)
 {
 	if (!m_Ball.CreateTexture(renderer, "..\\gfx\\ball.png"))
 		return false;
@@ -45,10 +48,10 @@ bool PongApp::CreateBall(Renderer& renderer)
 	return true;
 }
 
-void PongApp::ResetBall(BALL_DIRN dirn)
+void PongState::ResetBall(BALL_DIRN dirn)
 {
-	double x = m_Window.GetWidth() / 2;
-	double y = m_Window.GetHeight() / 2;
+	double x = m_pWnd->GetWidth() / 2;
+	double y = m_pWnd->GetHeight() / 2;
 
 	double vx = (dirn == RIGHT) ? m_Ball_XSpeed : -m_Ball_XSpeed;
 
@@ -56,7 +59,7 @@ void PongApp::ResetBall(BALL_DIRN dirn)
 	m_Ball.SetPosition(Vec2D(x, y));
 }
 
-bool PongApp::CreateSounds()
+bool PongState::CreateSounds()
 {
 	if (!m_BounceSound.CreateFromFile("..\\sfx\\Bounce.wav"))
 		return false;
@@ -67,7 +70,7 @@ bool PongApp::CreateSounds()
 	return true;
 }
 
-bool PongApp::CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x, int paddle_y)
+bool PongState::CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x, int paddle_y)
 {
 	// Left paddle creation 
 	if (!paddle.CreateTexture(renderer, "..\\gfx\\paddle.png"))
@@ -78,16 +81,16 @@ bool PongApp::CreatePaddle(GameObject &paddle, Renderer& renderer, int paddle_x,
 	return true;
 }
 
-void PongApp::AppCleanup()
+void PongState::CleanUp()
 {
 }
 
 
-void PongApp::AppRender(Renderer& renderer)
+void PongState::Render(Renderer& renderer)
 {
 	// Set Score text positions
-	static int left_x = 4 * m_Window.GetWidth() / 10;
-	static int right_x = 6 * m_Window.GetWidth() / 10;
+	static int left_x = 4 * m_pWnd->GetWidth() / 10;
+	static int right_x = 6 * m_pWnd->GetWidth() / 10;
 
 	m_Ball.Render(renderer);
 	m_LeftPaddle.Render(renderer);
@@ -97,7 +100,7 @@ void PongApp::AppRender(Renderer& renderer)
 	m_RightScoreText.Render(renderer, right_x, 0);
 }
 
-void PongApp::AppUpdate(double dt)
+void PongState::Update(double dt)
 {
 	// Move game objects
 	m_Ball.Update(dt);
@@ -118,7 +121,12 @@ void PongApp::AppUpdate(double dt)
 }
 
 
-void PongApp::CheckForPointWon()
+GameState::QUITRESPONSE PongState::QuitDialog()
+{
+	return ThreeOptionQuitDialog("MENUSTATE");
+}
+
+void PongState::CheckForPointWon()
 {
 	if (CheckForCircleAxisIntersection(XAXIS, 1, -m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
@@ -129,7 +137,7 @@ void PongApp::CheckForPointWon()
 
 		m_ScoreSound.Play();
 	}
-	else if (CheckForCircleAxisIntersection(XAXIS, -1, m_Window.GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
+	else if (CheckForCircleAxisIntersection(XAXIS, -1, m_pWnd->GetWidth() + m_Ball.GetWidth(), m_Ball, m_Ball.GetWidth() / 2))
 	{
 		m_LeftPlayerScore++;
 		ResetBall(LEFT);
@@ -140,9 +148,9 @@ void PongApp::CheckForPointWon()
 	}
 }
 
-void PongApp::UpdateScores()
+void PongState::UpdateScores()
 {
-	Renderer& renderer = m_Window.GetRenderer();
+	Renderer& renderer = m_pWnd->GetRenderer();
 
 	FontTTF arialFont;
 	if (!arialFont.LoadFont("C:\\Windows\\Fonts\\ARIAL.TTF", 50, SDL_Color{ 0xFF, 0xFF, 0xFF, 0xFF }))
@@ -152,14 +160,14 @@ void PongApp::UpdateScores()
 	m_RightScoreText.CreateFromText(renderer, std::to_string(m_RightPlayerScore), arialFont);
 }
 
-void PongApp::TestForWallCollisions()
+void PongState::TestForWallCollisions()
 {
 	if (CheckForCircleAxisCollision(YAXIS, 1, 0, m_Ball, m_Ball.GetHeight() / 2) ||
-		CheckForCircleAxisCollision(YAXIS, -1, m_Window.GetHeight(), m_Ball, m_Ball.GetHeight() / 2))
+		CheckForCircleAxisCollision(YAXIS, -1, m_pWnd->GetHeight(), m_Ball, m_Ball.GetHeight() / 2))
 		m_BounceSound.Play();
 }
 
-bool PongApp::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
+bool PongState::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
 {
 	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
 
@@ -186,7 +194,7 @@ bool PongApp::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, Game
 
 
 
-bool PongApp::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, int Norm, double planePos, double circle_radius)
+bool PongState::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, int Norm, double planePos, double circle_radius)
 {
 	double paddle_halfheight = paddle_obj.GetHeight() / 2;
 	double& velocity_x = ball_obj.GetVel().x;
@@ -205,7 +213,7 @@ bool PongApp::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, in
 	return false;
 }
 
-bool PongApp::PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, int Norm, int dirn, double circle_radius)
+bool PongState::PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, int Norm, int dirn, double circle_radius)
 {
 	double& position_x = ball_obj.GetPos().x;
 	double& velocity_x = ball_obj.GetVel().x;
@@ -222,7 +230,7 @@ bool PongApp::PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, 
 	return false;
 }
 
-bool PongApp::BallBounceOffPaddle(int Norm, double dist, GameObject &ball_obj, double relativeYPosition)
+bool PongState::BallBounceOffPaddle(int Norm, double dist, GameObject &ball_obj, double relativeYPosition)
 {
 	double& position_x = ball_obj.GetPos().x;
 	double& velocity_x = ball_obj.GetVel().x;
@@ -236,7 +244,7 @@ bool PongApp::BallBounceOffPaddle(int Norm, double dist, GameObject &ball_obj, d
 	return true;
 }
 
-void PongApp::PaddleClamp(double dt, GameObject& paddle)
+void PongState::PaddleClamp(double dt, GameObject& paddle)
 {
 	double& y = paddle.GetPos().y;
 
@@ -246,7 +254,7 @@ void PongApp::PaddleClamp(double dt, GameObject& paddle)
 		y = m_paddle_max;
 }
 
-bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
+bool PongState::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 {
 	switch (key)
 	{
@@ -266,7 +274,7 @@ bool PongApp::OnKeyDown(SDL_Scancode scan, SDL_Keycode key)
 	return true;
 }
 
-bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
+bool PongState::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 {
 	double& leftVertSpeed = m_LeftPaddle.GetVel().y;
 	double& rightVertSpeed = m_RightPaddle.GetVel().y;
@@ -290,7 +298,7 @@ bool PongApp::OnKeyUp(SDL_Scancode scan, SDL_Keycode key)
 			rightVertSpeed = 0.0;
 		break;
 	case SDLK_ESCAPE:
-		m_Running = false;
+		RequestAppQuit();
 		break;
 	}
 

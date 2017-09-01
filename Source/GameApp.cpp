@@ -7,6 +7,37 @@
 #include <sstream>
 
 #include "SDLErrorReport.h"
+#include "GameState.h"
+
+Uint32 WindowCreationParams::SetRendererCreateFlags()
+{
+	Uint32 iFlags = bSoftwareRender ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED;
+
+	if (bVSync)
+		iFlags |= SDL_RENDERER_PRESENTVSYNC;
+	if (bTextureRender)
+		iFlags |= SDL_RENDERER_TARGETTEXTURE;
+
+	return iFlags;
+}
+
+Uint32 WindowCreationParams::SetWindowCreateFlags()
+{
+	Uint32 iFlags = SDL_WINDOW_SHOWN;
+	if (Resizeable)
+		iFlags |= SDL_WINDOW_RESIZABLE;
+	if (bFullscreen)
+		iFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (bOpenGL)
+		iFlags |= SDL_WINDOW_OPENGL;
+	if (bBorderless)
+		iFlags |= SDL_WINDOW_BORDERLESS;
+	if (bMouseGrab)
+		iFlags |= SDL_WINDOW_INPUT_GRABBED;
+	if (bMouseCapture)
+		iFlags |= SDL_WINDOW_MOUSE_CAPTURE;
+	return iFlags;
+}
 
 GameApp::GameApp(std::string appname) : m_AppName(appname)
 {
@@ -20,7 +51,8 @@ GameApp::~GameApp()
 
 void GameApp::Cleanup()
 {
-	AppCleanup();
+	if (m_pState)
+		m_pState->CleanUp();
 
 	m_Window.Release();
 
@@ -31,7 +63,17 @@ void GameApp::Cleanup()
 	SDL_Quit();
 }
 
-bool GameApp::Init(WindowCreationParams& createParam)
+bool GameApp::ChangeState(std::unique_ptr<GameState> new_state)
+{
+	m_pState = std::move(new_state);
+	SDL_assert(m_pState);
+
+	m_pState->SetWindow(&m_Window);
+
+	return (m_pState.get() != nullptr);
+}
+
+bool GameApp::Init(WindowCreationParams& createParam, std::string initial_state)
 {
 	// Initialise SDL, report error if it fails
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -73,14 +115,14 @@ bool GameApp::Init(WindowCreationParams& createParam)
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		createParam.iWidth, createParam.iHeight,
-		SetWindowCreateFlags(createParam)))
+		createParam.SetWindowCreateFlags()))
 	{
 		Error2MsgBox("Window Creation Failed.\n");
 		return false;
 	}
 
 	// Creates a renderer and clears the window
-	if (!m_Window.CreateRenderer( SetRendererCreateFlags(createParam) ))
+	if (!m_Window.CreateRenderer( createParam.SetRendererCreateFlags() ))
 	{
 		Error2MsgBox("Renderer Creation Failed.\n");
 		return false;
@@ -88,38 +130,13 @@ bool GameApp::Init(WindowCreationParams& createParam)
 
 	m_Timer.Initialize();
 
-	return AppInit();
+	ChangeState( Create(initial_state) );
+	SDL_assert(m_pState);
+
+	return m_pState->Initialise();
 }
 
-Uint32 GameApp::SetRendererCreateFlags(WindowCreationParams &createParam)
-{
-	Uint32 iFlags = createParam.bSoftwareRender ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED;
 
-	if (createParam.bVSync)
-		iFlags |= SDL_RENDERER_PRESENTVSYNC;
-	if (createParam.bTextureRender)
-		iFlags |= SDL_RENDERER_TARGETTEXTURE;
-
-	return iFlags;
-}
-
-Uint32 GameApp::SetWindowCreateFlags(WindowCreationParams &createParam)
-{
-	Uint32 iFlags = SDL_WINDOW_SHOWN;
-	if (createParam.Resizeable)
-		iFlags |= SDL_WINDOW_RESIZABLE;
-	if (createParam.bFullscreen)
-		iFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	if (createParam.bOpenGL)
-		iFlags |= SDL_WINDOW_OPENGL;
-	if (createParam.bBorderless)
-		iFlags |= SDL_WINDOW_BORDERLESS;
-	if (createParam.bMouseGrab)
-		iFlags |= SDL_WINDOW_INPUT_GRABBED;
-	if (createParam.bMouseCapture)
-		iFlags |= SDL_WINDOW_MOUSE_CAPTURE;
-	return iFlags;
-}
 
 void GameApp::HandleEvents()
 {
@@ -127,10 +144,29 @@ void GameApp::HandleEvents()
 
 	while (SDL_PollEvent(&Event))
 	{
+		// If quit has been requested (eg clicking close button) then query user for confirmation
+		// via dialog box.  Then react to users choice
+		if (Event.type == SDL_QUIT)
+		{
+			GameState::QUITRESPONSE response = m_pState->QuitDialog();
+
+			switch (response)
+			{
+			case GameState::QUIT:
+				AppQuit();
+				return;
+			case GameState::NEWSTATE:
+				return;
+			}
+
+		}
+
+		// If the window handled the event the return else pas to the state
 		if (Event.type == SDL_WINDOWEVENT && Event.window.windowID == m_Window.GetID())
-			m_Window.OnEvent(Event);
-		else
-			OnEvent(Event);
+			if (m_Window.OnEvent(Event))
+				return;
+
+		m_pState->OnEvent(Event);
 	}
 }
 
@@ -149,8 +185,16 @@ void GameApp::MainLoop()
 			// Gets time since last frame
 			double deltaTime = m_Timer.GetDeltaTime();
 
-			// Update the derived class
-			AppUpdate(deltaTime);
+			std::string new_state = m_pState->ExtractNextState();
+
+			if (!new_state.empty())
+			{
+				ChangeState( Create(new_state) );
+				m_pState->Initialise();
+			}
+
+			// Update the state
+			m_pState->Update(deltaTime);
 
 			if (m_ShowFPS)
 				DrawFramesPerSecond();
@@ -167,15 +211,15 @@ void GameApp::Render()
 	// If we have valid window & renderer then render the frame
 	if (m_Window.CanRender())
 	{
-		AppRender(m_Window.GetRenderer());
+		m_pState->Render(m_Window.GetRenderer());
 		m_Window.Present();
 	}
 }
 
-int GameApp::Execute(WindowCreationParams& createParam)
+int GameApp::Execute(WindowCreationParams& createParam, std::string initial_state)
 {
 	// Initialise SDL and create window
-	if (!Init(createParam))
+	if ( !Init(createParam, initial_state) )
 		return -1;
 
 	MainLoop();

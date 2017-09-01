@@ -62,3 +62,4 @@ void Window::Present()
 	if (CanRender())
 		m_Renderer.Present();
 }
+
