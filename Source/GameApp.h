@@ -82,8 +82,8 @@ public:
 	int Execute(WindowCreationParams& createParam, std::string initial_state);
 
 	Window& GetWindow() { return m_Window; }
-	bool IsRunning() { return m_Running; }
-	void AppQuit() { m_Running = false; }
+	bool IsRunning() const noexcept { return m_Running; }
+	void AppQuit() noexcept { m_Running = false; }
 
 	bool ChangeState(std::unique_ptr<GameState> new_state);
 

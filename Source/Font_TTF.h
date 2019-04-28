@@ -16,8 +16,8 @@ public:
 
 	void ChangeSize(int ptsize) { m_ptsize = ptsize; }
 
-	TTF_Font* GetFontPtr() { return m_pFont; }
-	SDL_Color& GetColor() { return m_textColor; }
+	TTF_Font* GetFontPtr() const noexcept { return m_pFont; }
+	const SDL_Color& GetColor() const noexcept { return m_textColor; }
 
 private:
 	TTF_Font* m_pFont = nullptr;

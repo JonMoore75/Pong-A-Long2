@@ -52,7 +52,10 @@ GameApp::~GameApp()
 void GameApp::Cleanup()
 {
 	if (m_pState)
+	{
 		m_pState->CleanUp();
+		m_pState.release();
+	}
 
 	m_Window.Release();
 
@@ -156,6 +159,7 @@ void GameApp::HandleEvents()
 				AppQuit();
 				return;
 			case GameState::NEWSTATE:
+				// Do nothing Mainloop will notice statechange by checking m_pState->ExtractNextState()
 				return;
 			}
 

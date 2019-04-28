@@ -9,7 +9,7 @@ class StartMenuState : public GameState
 {
 public:
 	StartMenuState(){}
-	~StartMenuState() {}
+	~StartMenuState() noexcept {}
 
 	bool Initialise();
 	void CleanUp();

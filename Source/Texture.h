@@ -12,7 +12,7 @@ class Texture
 {
 public:
 	Texture();
-	~Texture();
+	~Texture() noexcept;
 
 	void Release();
 

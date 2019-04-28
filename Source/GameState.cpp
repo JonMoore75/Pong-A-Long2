@@ -73,7 +73,7 @@ std::string GameState::ExtractNextState()
 	return newState;
 }
 
-void GameState::RequestAppQuit()
+void GameState::RequestAppQuit() const
 {
 	SDL_Event Event;
 	Event.type = SDL_QUIT;

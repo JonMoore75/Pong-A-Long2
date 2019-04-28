@@ -32,7 +32,7 @@ public:
 	std::string ExtractNextState();
 
 protected:
-	void RequestAppQuit();
+	void RequestAppQuit() const;
 
 	Window* m_pWnd = nullptr;
 

@@ -19,7 +19,7 @@ public:
 		
 	bool Create(SDL_Window* pWindow, Uint32 flags = SDL_RENDERER_ACCELERATED, int index = -1);
 		
-	SDL_Renderer* GetRenderPtr() { return m_pRenderer; }
+	SDL_Renderer* GetRenderPtr() const { return m_pRenderer; }
 		
 private:
 	SDL_Renderer* m_pRenderer = nullptr;

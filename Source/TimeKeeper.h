@@ -13,12 +13,12 @@ public:
 
 	bool Update();
 
-	double GetDeltaTime() { return m_current_time - m_previous_time; }
+	double GetDeltaTime() const { return m_current_time - m_previous_time; }
 
-	double GetCurrentTime();
+	double GetCurrentTime() const;
 
-	double GetFrameRate() { return m_FrameRate; }
-	int GetMissedFrames() { return m_MissedFrames;  }
+	double GetFrameRate() const { return m_FrameRate; }
+	int GetMissedFrames() const { return m_MissedFrames;  }
 
 	void SetMinFrameTime(double minFrameTime) { m_minFrameTime = minFrameTime; }
 	void SetMaxFrameTime(double maxFrameTime) { m_maxFrameTime = maxFrameTime; }

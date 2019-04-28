@@ -9,11 +9,11 @@ class  SoundEffect
 {
 public:
 	SoundEffect();
-	~SoundEffect();
+	~SoundEffect() noexcept;
 
 	bool CreateFromFile(std::string filename);
 
-	void Play(int channel=-1, int loops=0);
+	void Play(int channel=-1, int loops=0) const;
 
 	void Release();
 private:

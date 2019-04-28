@@ -50,8 +50,8 @@ bool PongState::CreateBall(Renderer& renderer)
 
 void PongState::ResetBall(BALL_DIRN dirn)
 {
-	double x = m_pWnd->GetWidth() / 2;
-	double y = m_pWnd->GetHeight() / 2;
+	const double x = m_pWnd->GetWidth() / 2;
+	const double y = m_pWnd->GetHeight() / 2;
 
 	double vx = (dirn == RIGHT) ? m_Ball_XSpeed : -m_Ball_XSpeed;
 
@@ -169,7 +169,7 @@ void PongState::TestForWallCollisions()
 
 bool PongState::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, GameObject& ball_obj, double circle_radius)
 {
-	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
+	const double paddle_halfwidth = paddle_obj.GetWidth() / 2;
 
 	double planePos = paddle_obj.GetPos().x + Norm*paddle_halfwidth;
 
@@ -196,8 +196,8 @@ bool PongState::CheckForBallPaddleCollision(int Norm, GameObject& paddle_obj, Ga
 
 bool PongState::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, int Norm, double planePos, double circle_radius)
 {
-	double paddle_halfheight = paddle_obj.GetHeight() / 2;
-	double& velocity_x = ball_obj.GetVel().x;
+	const double paddle_halfheight = paddle_obj.GetHeight() / 2;
+	const double& velocity_x = ball_obj.GetVel().x;
 
 	double dist = GetIntersectionDist(XAXIS, Norm, planePos, ball_obj, circle_radius);
 	double timeSinceCollision = abs(dist / velocity_x);
@@ -215,11 +215,11 @@ bool PongState::PaddleFaceCollide(GameObject &paddle_obj, GameObject &ball_obj, 
 
 bool PongState::PaddleCornerCollide(GameObject &ball_obj, GameObject &paddle_obj, int Norm, int dirn, double circle_radius)
 {
-	double& position_x = ball_obj.GetPos().x;
-	double& velocity_x = ball_obj.GetVel().x;
+	const double& position_x = ball_obj.GetPos().x;
+	const double& velocity_x = ball_obj.GetVel().x;
 
-	double paddle_halfheight = paddle_obj.GetHeight() / 2;
-	double paddle_halfwidth = paddle_obj.GetWidth() / 2;
+	const double paddle_halfheight = paddle_obj.GetHeight() / 2;
+	const double paddle_halfwidth = paddle_obj.GetWidth() / 2;
 
 	Vec2D corner_offset(paddle_halfwidth*Norm, dirn*paddle_halfheight);
 	double timeSinceCollision = CheckCornerCircleCollision(paddle_obj.GetPos() + corner_offset, ball_obj.GetPos(), ball_obj.GetVel() - paddle_obj.GetVel(), circle_radius);

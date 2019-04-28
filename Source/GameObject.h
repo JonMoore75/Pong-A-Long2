@@ -19,14 +19,14 @@ public:
 	bool CreateTextureFromText(Renderer& renderer, std::string text, FontTTF& font);
 	void Render(Renderer& renderer) const;
 
-	const Vec2D& GetVel() const { return m_Velocity; }
-	const Vec2D& GetPos() const { return m_Position; }
+	const Vec2D& GetVel() const noexcept { return m_Velocity; }
+	const Vec2D& GetPos() const noexcept { return m_Position; }
 
 	Vec2D& GetVel() { return const_cast<Vec2D&>(static_cast<const GameObject*>(this)->GetVel()); }
 	Vec2D& GetPos() { return const_cast<Vec2D&>(static_cast<const GameObject*>(this)->GetPos()); }
 
-	int GetWidth() const { return m_Texture.GetWidth(); }
-	int GetHeight() const { return m_Texture.GetHeight(); }
+	int GetWidth()	const noexcept { return m_Texture.GetWidth(); }
+	int GetHeight() const noexcept { return m_Texture.GetHeight(); }
 
 	void SetVelocity(const Vec2D& velocity) { m_Velocity = velocity; }
 	void SetPosition(const Vec2D& position) { m_Position = position; }

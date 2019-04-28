@@ -18,7 +18,7 @@ TimeKeeper::~TimeKeeper()
 //-------------------------------------------------------------
 // Get (current) time since initialize()
 
-double TimeKeeper::GetCurrentTime()
+double TimeKeeper::GetCurrentTime() const
 {
 	assert( m_freq );
 

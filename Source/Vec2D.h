@@ -6,7 +6,7 @@ class Vec2D
 {
 public:
 	Vec2D(double _x = 0.0, double _y = 0.0);
-	~Vec2D() {}
+	~Vec2D() noexcept {}
 
 	Vec2D& operator=(const Vec2D& rhs);
 

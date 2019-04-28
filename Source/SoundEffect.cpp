@@ -35,7 +35,7 @@ bool SoundEffect::CreateFromFile(std::string filename)
 	return (m_Sound != nullptr);
 }
 
-void SoundEffect::Play(int channel/*=-1*/, int loops/*=0*/)
+void SoundEffect::Play(int channel/*=-1*/, int loops/*=0*/) const
 {
 	Mix_PlayChannel(channel, m_Sound, loops);
 }

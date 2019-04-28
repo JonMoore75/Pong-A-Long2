@@ -11,7 +11,7 @@ class Window : public EventHandler
 {
 public:
 	Window();
-	~Window();
+	~Window() noexcept;
 
 	void Release();
 
@@ -20,23 +20,22 @@ public:
 	void ClearWindow();
 	void Present();
 
-	int GetID() { return m_WindowID; }
-
-	int GetHeight() { return m_Height; }
-	int GetWidth() { return m_Width; }
+	int GetID()		const noexcept { return m_WindowID; }
+	int GetHeight() const noexcept { return m_Height; }
+	int GetWidth()	const noexcept { return m_Width; }
 
 	void SetTitle(std::string NewTitle) { SDL_SetWindowTitle(m_pWindow, NewTitle.c_str()); }
 
-	bool CanRender() { return (m_pWindow && m_Renderer.GetRenderPtr() && !m_bMinimized); }
+	bool CanRender() const { return (m_pWindow && m_Renderer.GetRenderPtr() && !m_bMinimized); }
 
 	Renderer& GetRenderer() { return m_Renderer; }
 
 	//Window focii 
-	bool hasMouseFocus() { return m_bMouseFocus; }
-	bool hasKeyboardFocus() { return m_bKeyboardFocus; }
-	bool isMinimized() { return m_bMinimized; }
-	bool isMaximized() { return m_bMaximized; }
-	bool isShown() { return m_bShown; }
+	bool hasMouseFocus()	const noexcept { return m_bMouseFocus; }
+	bool hasKeyboardFocus() const noexcept { return m_bKeyboardFocus; }
+	bool isMinimized()		const noexcept { return m_bMinimized; }
+	bool isMaximized()		const noexcept { return m_bMaximized; }
+	bool isShown()			const noexcept { return m_bShown; }
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Event Handlers
